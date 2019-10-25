@@ -1,0 +1,18 @@
+.idea/
+.idea/*
+*.iml
+lib_managed/
+target/
+.idea_modules/
+*.test
+*.jks
+*.pem
+credentials.txt
+logs
+dist
+.hydra
+.bloop
+hydra.sbt
+
+# Project exclude paths
+/frontend/node_modules/
