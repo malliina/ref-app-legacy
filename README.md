@@ -1,4 +1,7 @@
-# ref-app
+[![Build Status](https://github.com/malliina/ref-app/workflows/Test/badge.svg)](https://github.com/malliina/ref-app/actions)
+[![Build Status](https://travis-ci.org/malliina/ref-app.png?branch=master)](https://travis-ci.org/malliina/ref-app)
+
+# Reference Application
 
 A reference application.
 
