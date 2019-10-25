@@ -24,7 +24,8 @@ val p = Project("ref-app", file("."))
       "com.lihaoyi" %% "scalatags" % "0.7.0",
       specs2 % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test,
-      "org.seleniumhq.selenium" % "selenium-java" % "3.141.59" % Test
+      "org.seleniumhq.selenium" % "selenium-java" % "3.141.59" % Test,
+      "ch.vorburger.mariaDB4j" % "mariaDB4j" % "2.4.0" % Test
     ),
     dockerBaseImage := "openjdk:11",
     daemonUser in Docker := "daemon",

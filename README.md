@@ -8,8 +8,9 @@ A reference application.
 - Database connectivity with [Quill](https://getquill.io/) and migrations with [Flyway](https://flywaydb.org/)
 - Server-rendered HTML with [ScalaTags](http://www.lihaoyi.com/scalatags/)
 - Webpack-generated frontend assets in [frontend](frontend) including TypeScript and SASS
-- [Selenium](http://www.scalatest.org/user_guide/using_selenium) integration tests in [SeleniumTests.scala](test/tests/SeleniumTests.scala)
-- [buildspec.yml](buildspec.yml) for deployment to [AWS Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/)
+- [Selenium](http://www.scalatest.org/user_guide/using_selenium) tests in [SeleniumTests.scala](test/tests/SeleniumTests.scala)
+with embedded MariaDB via [MariaDB4j](https://github.com/vorburger/MariaDB4j)
+- AWS CloudFormation [templates](infra) for deployment to [AWS Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/)
 
 ## Running
 
@@ -27,10 +28,11 @@ To run the app:
 
 The app should now run at http://localhost:9000.
 
-A Play run hook in [NPMRunHook.scala](project/NPMRunHook.scala) launches `npm` when `sbt run` is started, therefore:
+A [Play run hook](https://www.playframework.com/documentation/2.7.x/sbtCookbook#Hooking-into-Plays-dev-mode) 
+in [NPMRunHook.scala](project/NPMRunHook.scala) launches `npm` when `sbt run` is started, therefore:
 
 - both the backend and frontend are built at the same time
-- any built frontend assets are made available to the Scala backend
+- any built frontend assets are made available to and served by the Scala backend
 
 ### With Docker
 
@@ -44,16 +46,12 @@ The app should now run at http://localhost:9000.
 
 ## AWS and Deployments
 
-The buildspec file in the root of the repo can be used with AWS CodeBuild and CodePipeline.
-
-| Buildspec file | Deployment target
-|----------------|------------------
-| [buildspec.yml](buildspec.yml) | Single-container Elastic Beanstalk
-
 To deploy the application to AWS along with a database and a CI pipeline:
 
 1. Copy the CloudFormation templates in [infra](infra) to an S3 bucket
 1. Deploy CloudFormation template [infra/vpc-bastion-aurora-eb-ci.cfn.yml](infra/vpc-bastion-aurora-eb-ci.cfn.yml)
+
+The template will provision infrastructure and launch the app. Pushing to master will trigger a redeploy.
 
 ## Formatting
 

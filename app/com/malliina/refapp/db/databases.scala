@@ -1,22 +1,18 @@
 package com.malliina.refapp.db
 
-import java.nio.file.{Path, Paths}
-
-import com.typesafe.config.ConfigFactory
+import com.malliina.refapp.db.DatabaseConf.MySQLDriver
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import play.api.{Configuration, Logger}
 
-case class DatabaseConf(url: String, user: String, pass: String)
+case class DatabaseConf(url: String, user: String, pass: String, driver: String = MySQLDriver)
 
 object DatabaseConf {
-  val userHome = Paths.get(sys.props("user.home"))
-  val confFile = userHome.resolve(".refapp/refapp.conf")
+  val MySQLDriver = "com.mysql.jdbc.Driver"
 
   def orFail() = apply().fold(err => throw new Exception(err), identity)
 
-  def fromFile(file: Path = confFile) = {
-    val config = Configuration(ConfigFactory.parseFile(confFile.toFile).resolve())
-    val databaseConfig = config.get[Configuration]("refapp.db")
+  def fromConf(conf: Configuration) = {
+    val databaseConfig = conf.get[Configuration]("refapp.db")
     def get(key: String) = databaseConfig.get[String](key)
     DatabaseConf(get("url"), get("user"), get("pass"))
   }
@@ -36,7 +32,7 @@ object HikariConnection {
 
   def apply(conf: DatabaseConf): HikariDataSource = {
     val hikari = new HikariConfig()
-    hikari.setDriverClassName("com.mysql.jdbc.Driver")
+    hikari.setDriverClassName(conf.driver)
     hikari.setJdbcUrl(conf.url)
     hikari.setUsername(conf.user)
     hikari.setPassword(conf.pass)
