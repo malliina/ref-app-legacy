@@ -49,10 +49,8 @@ The app should now run at http://localhost:9000.
 
 ## AWS and Deployments
 
-To deploy the application to AWS along with a database and a CI pipeline:
-
-Click [this link](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=ref-app&templateURL=https://s3.amazonaws.com/ref-app-templates-public/vpc-bastion-aurora-eb-ci.cfn.yml)
-to setup the whole stack.
+Use the CloudFormation templates in [infra](infra) to deploy.
+1. Deploy [this app](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=ref-app&templateURL=https://s3.amazonaws.com/ref-app-templates-public/vpc-bastion-aurora-eb-ci.cfn.yml) to setup the whole stack.
 
 The template will provision infrastructure and launch the app. Pushing to master will trigger a redeploy.
 

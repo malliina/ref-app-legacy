@@ -27,7 +27,7 @@ Parameters:
   GitHubRepository:
     Type: String
     Description: GitHub repository
-    Default: play-docka
+    Default: ref-app
     MinLength: 1
     MaxLength: 256
     AllowedPattern: '[a-zA-Z0-9][-a-zA-Z0-9]*'

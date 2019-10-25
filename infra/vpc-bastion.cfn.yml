@@ -9,7 +9,7 @@ Parameters:
 
   TemplateBucket:
     Type: String
-    Default: cfn-demo-templates
+    Default: ref-app-templates-public
     Description: The template bucket for the CloudFormation templates
 
   EnvironmentName:
@@ -58,8 +58,8 @@ Parameters:
   # bastion.cfn.yml parameters
   KeyName:
     Description: EC2 key pair name for bastion host SSH access
-    Type: AWS::SSM::Parameter::Value<AWS::EC2::KeyPair::KeyName>
-    Default: /dev/keypairs/bastion
+    Type: String
+    Default: XPS13
 
   LogRetentionInDays:
     Description: Number of days you would like your CloudWatch Logs to be retained

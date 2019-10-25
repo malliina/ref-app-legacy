@@ -53,11 +53,6 @@ Parameters:
     Default: 80
 
   # bastion.cfn.yml parameters
-  KeyName:
-    Description: EC2 key pair name for bastion host SSH access
-    Type: AWS::SSM::Parameter::Value<AWS::EC2::KeyPair::KeyName>
-    Default: /dev/keypairs/bastion
-
   LogRetentionInDays:
     Description: Number of days you would like your CloudWatch Logs to be retained
     Type: Number
@@ -72,38 +67,6 @@ Parameters:
     AllowedValues:
       - true
       - false
-
-  # beanstalk-*.cfn.yml parameters
-  EC2KeyPairName:
-    Description: EC2 key pair name for bastion host SSH access
-    Type: AWS::SSM::Parameter::Value<AWS::EC2::KeyPair::KeyName>
-    Default: /dev/keypairs/bastion
-
-  EbInstanceType:
-    Description: The instance type for Elastic Beanstalk
-    Type: String
-    Default: t3.small
-    ConstraintDescription: Instance type not supported
-    AllowedValues:
-      - t3.nano
-      - t3.micro
-      - t3.small
-      - t3.medium
-      - t3.large
-      - t3.xlarge
-      - t3.2xlarge
-      - m5.large
-      - m5.xlarge
-      - m5.2xlarge
-      - m5.4xlarge
-      - m5.12xlarge
-      - m5.24xlarge
-      - r4.large
-      - r4.xlarge
-      - r4.2xlarge
-      - r4.4xlarge
-      - r4.8xlarge
-      - r4.16xlarge
 
   SSLCertificateArn:
     Description: The optional SSL/TLS certificate ARN
@@ -145,7 +108,7 @@ Parameters:
     MinLength: 6
     MaxLength: 41
     AllowedPattern: "[a-zA-Z0-9]*"
-    ConstraintDescription: Password must contain only alphanumeric characters
+    ConstraintDescription: Length 6-41, only alphanumeric characters
 
   DatabaseName:
     Default: refapp
@@ -173,31 +136,6 @@ Parameters:
     AllowedValues:
       - true
       - false
-
-  DatabaseInstanceClass:
-    Default: db.t2.small
-    Type: String
-    Description: "Database instance class, e.g. db.t2.micro (free tier) - Engine support: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html"
-    ConstraintDescription: DB instance class not supported
-    AllowedValues:
-      - db.t2.micro
-      - db.t2.small
-      - db.t2.medium
-      - db.t2.large
-      - db.t2.xlarge
-      - db.t2.2xlarge
-      - db.m4.large
-      - db.m4.xlarge
-      - db.m4.2xlarge
-      - db.m4.4xlarge
-      - db.m4.10xlarge
-      - db.m4.16xlarge
-      - db.r4.large
-      - db.r4.xlarge
-      - db.r4.2xlarge
-      - db.r4.4xlarge
-      - db.r4.8xlarge
-      - db.r4.16xlarge
 
   DatabaseEnableAlarms:
     Default: false
@@ -280,7 +218,7 @@ Parameters:
   GitHubRepository:
     Type: String
     Description: GitHub repository
-    Default: play-docka
+    Default: ref-app
     MinLength: 1
     MaxLength: 256
     AllowedPattern: '[a-zA-Z0-9][-a-zA-Z0-9]*'
@@ -289,7 +227,7 @@ Parameters:
   GitHubWebhookSecret:
     NoEcho: true
     Type: String
-    Description: GitHub webhook secret for the repo
+    Description: Optional GitHub webhook secret for the repo
     MinLength: 0
     MaxLength: 256
     Default: ""
@@ -309,7 +247,6 @@ Metadata:
     - Label:
         default: Bastion
       Parameters:
-        - KeyName
         - LogRetentionInDays
         - MFA
         - SSHFrom
@@ -317,7 +254,6 @@ Metadata:
         default: Database
       Parameters:
         - DatabaseEngine
-        - DatabaseInstanceClass
         - DatabaseUser
         - DatabasePassword
         - DatabaseName
@@ -339,8 +275,6 @@ Metadata:
     - Label:
         default: Elastic Beanstalk
       Parameters:
-        - EbInstanceType
-        - EC2KeyPairName
         - AutoScalingMinInstanceCount
         - AutoScalingMaxInstanceCount
     - Label:
@@ -359,8 +293,6 @@ Metadata:
         default: Port
       AppProtocol:
         default: Protocol
-      KeyName:
-        default: EC2 Key Pair
       LogRetentionInDays:
         default: Log Retention
       MFA:
@@ -383,12 +315,6 @@ Metadata:
         default: Engine
       EncryptionAtRest:
         default: Encryption at Rest
-      DatabaseInstanceClass:
-        default: Instance Type
-      EbInstanceType:
-        default: Instance Type
-      EC2KeyPairName:
-        default: EC2 Key Pair
       AutoScalingMinInstanceCount:
         default: Min Instances
       AutoScalingMaxInstanceCount:
@@ -442,7 +368,6 @@ Resources:
       TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/bastion.cfn.yml
       Parameters:
         NetworkStackName: !GetAtt VpcStack.Outputs.Name
-        KeyName: !Ref KeyName
         LogRetentionInDays: !Ref LogRetentionInDays
         MFA: !Ref MFA
     DependsOn: VpcStack
@@ -455,7 +380,6 @@ Resources:
         NetworkStackName: !GetAtt VpcStack.Outputs.Name
         EnvironmentName: !Ref EnvironmentName
         DatabaseEngine: !Ref DatabaseEngine
-        DatabaseInstanceClass: !Ref DatabaseInstanceClass
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         DatabaseName: !Ref DatabaseName
@@ -477,12 +401,9 @@ Resources:
         ApplicationName: !Ref AWS::StackName
         EnvironmentName: !Ref EnvironmentName
         NetworkStackName: !GetAtt VpcStack.Outputs.Name
-        DatabaseStackName: !GetAtt AuroraStack.Outputs.Name
+        DatabaseStackName: !GetAtt AuroraStack.Outputs.StackName
         DatabaseName: !Ref DatabaseName
         DatabasePassword: !Ref DatabasePassword
-        EC2KeyPairName: !Ref EC2KeyPairName
-        DevInstanceType: !Ref EbInstanceType
-        ProdInstanceType: !Ref EbInstanceType
         SSLCertificateArn: !Ref SSLCertificateArn
         AutoScalingMinInstanceCount: !Ref AutoScalingMinInstanceCount
         AutoScalingMaxInstanceCount: !Ref AutoScalingMaxInstanceCount
@@ -523,7 +444,7 @@ Outputs:
       Name: !Sub ${AWS::StackName}-ElasticBeanstalkStack
 
   AuroraStackName:
-    Value: !GetAtt AuroraStack.Outputs.Name
+    Value: !GetAtt AuroraStack.Outputs.StackName
     Condition: IsAurora
     Export:
       Name: !Sub ${AWS::StackName}-DatabaseStackName

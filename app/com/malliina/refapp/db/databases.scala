@@ -11,7 +11,7 @@ object DatabaseConf {
 
   def orFail() = apply().fold(err => throw new Exception(err), identity)
 
-  def fromConf(conf: Configuration) = {
+  def fromConf(conf: Configuration): DatabaseConf = {
     val databaseConfig = conf.get[Configuration]("refapp.db")
     def get(key: String) = databaseConfig.get[String](key)
     DatabaseConf(get("url"), get("user"), get("pass"))

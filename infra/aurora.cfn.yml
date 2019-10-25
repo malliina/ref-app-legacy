@@ -146,6 +146,7 @@ Parameters:
     Type: Number
     Default: 2
     AllowedValues:
+      - 1
       - 2
       - 4
       - 8
@@ -159,6 +160,7 @@ Parameters:
     Type: Number
     Default: 64
     AllowedValues:
+      - 1
       - 2
       - 4
       - 8
@@ -458,7 +460,7 @@ Outputs:
     Description: Aurora Stack Name
     Value: !Ref AWS::StackName
     Export:
-      Name: !Sub ${AWS::StackName}-Name
+      Name: !Sub ${AWS::StackName}-StackName
 
   AuroraClusterId:
     Description: Aurora Cluster ID
