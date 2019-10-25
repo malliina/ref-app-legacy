@@ -130,7 +130,7 @@ Parameters:
 
   # aurora.cfn.yml and/or db.cfn.yml parameters
   DatabaseUser:
-    Default: startupadmin
+    Default: refapp
     Type: String
     Description: Database admin account name
     MinLength: 5
@@ -148,7 +148,7 @@ Parameters:
     ConstraintDescription: Password must contain only alphanumeric characters
 
   DatabaseName:
-    Default: StartupDB
+    Default: refapp
     Type: String
     Description: Database name
     MinLength: 1
