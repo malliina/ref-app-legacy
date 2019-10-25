@@ -15,7 +15,7 @@ Parameters:
     AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
 
   DatabaseUser:
-    Default: mydbuser
+    Default: refapp
     Type: String
     Description: Database admin account name
     MinLength: 5
@@ -33,7 +33,7 @@ Parameters:
     ConstraintDescription: Only alphanumeric characters, minimum length 8
 
   DatabaseName:
-    Default: mydb
+    Default: refapp
     Type: String
     Description: Database name
     MinLength: 1
