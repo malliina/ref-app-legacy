@@ -329,7 +329,7 @@ Resources:
       DBInstanceClass: !Ref DatabaseInstanceClass
       DBSubnetGroupName: !Ref DatabaseSubnetGroup
       StorageEncrypted: !Ref EncryptionAtRest
-      DBParameterGroupName: !If [ IsAuroraMySQL,  default.aurora5.6, default.aurora-postgresql9.6 ]
+      DBParameterGroupName: !If [ IsAuroraMySQL, default.aurora-mysql5.7, default.aurora-postgresql9.6 ]
       MonitoringInterval: !If [ EnhancedMonitoringSupprtedAndEnabled, 60, 0 ]
       MonitoringRoleArn: !If [ EnhancedMonitoringSupprtedAndEnabled, !GetAtt EnhancedMonitoringRole.Arn, !Ref "AWS::NoValue" ]
       CopyTagsToSnapshot: true

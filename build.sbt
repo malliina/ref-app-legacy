@@ -4,7 +4,7 @@ import scala.util.Try
 val gitHash = settingKey[String]("Git hash")
 val dockerHttpPort = settingKey[Int]("HTTP listen port")
 val defaultPort = 9000
-val npmBuild = taskKey[Unit]("Runs npm build")
+val Frontend = config("frontend")
 
 val p = Project("ref-app", file("."))
   .enablePlugins(PlayScala, BuildInfoPlugin, DockerPlugin)
@@ -44,8 +44,9 @@ val p = Project("ref-app", file("."))
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, "gitHash" -> gitHash.value),
     buildInfoPackage := "com.malliina.refapp.build",
     pipelineStages := Seq(digest, gzip),
-    unmanagedResourceDirectories in Assets += baseDirectory.value / "frontend" / "dist",
-    PlayKeys.playRunHooks += new NPMRunHook(baseDirectory.value / "frontend", target.value, streams.value.log),
-    npmBuild := NPMRunHook.build(baseDirectory.value / "frontend", streams.value.log),
-    stage in Docker := (stage in Docker).dependsOn(npmBuild).value
+    baseDirectory in Frontend := baseDirectory.value / "frontend",
+    unmanagedResourceDirectories in Assets += (baseDirectory in Frontend).value / "dist",
+    PlayKeys.playRunHooks += new NPMRunHook((baseDirectory in Frontend).value, target.value, streams.value.log),
+    stage in Frontend := NPMRunHook.stage((baseDirectory in Frontend).value, streams.value.log),
+    stage in Docker := (stage in Docker).dependsOn(stage in Frontend).value
   )

@@ -9,7 +9,12 @@ object NPMRunHook {
   val cmdPrefix = if (isWindows) "cmd /c " else ""
   val buildCommand = "npm run build"
 
-  def build(base: File, log: Logger): Unit = runProcessSync(buildCommand, base, log)
+  def stage(base: File, log: Logger): File = {
+    Seq("npm install", "npm run build").foreach { cmd =>
+      runProcessSync(cmd, base, log)
+    }
+    base
+  }
 
   def runProcessSync(command: String, base: File, log: Logger): Unit = {
     val actualCommand = canonical(command)
