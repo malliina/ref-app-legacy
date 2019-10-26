@@ -19,7 +19,7 @@ object RefDatabase {
   }
 }
 
-class RefDatabase(ds: HikariDataSource) extends Closeable {
+class RefDatabase(val ds: HikariDataSource) extends Closeable {
   lazy val ctx = new MysqlJdbcContext(SnakeCase, ds)
   import ctx._
 

@@ -120,12 +120,12 @@ Parameters:
     ConstraintDescription: Name must begin with a letter and contain only alphanumeric characters
 
   DatabaseEngine:
-    Default: aurora
     Type: String
     Description: Database engines - Aurora MySQL, Aurora PostgreSQL, PostgreSQL, MariaDB and MySQL
     ConstraintDescription: Choose an engine from the drop down
+    Default: aurora-mysql
     AllowedValues:
-      - aurora
+      - aurora-mysql
       - aurora-postgresql
 
   EncryptionAtRest:
@@ -232,6 +232,14 @@ Parameters:
     MaxLength: 256
     Default: ""
 
+  ApplicationSecret:
+    Description: Play application secret
+    NoEcho: true
+    Type: String
+    MinLength: 6
+    MaxLength: 1024
+    ConstraintDescription: Minimum 6 characters
+
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -239,6 +247,7 @@ Metadata:
         default: Environment
       Parameters:
         - EnvironmentName
+        - ApplicationSecret
     - Label:
         default: Region Availability Zones
       Parameters:
@@ -342,7 +351,7 @@ Conditions:
 
   IsProd: !Equals [ !Ref EnvironmentName, prod ]
 
-  IsAurora: !Or [ !Equals [ !Ref DatabaseEngine, aurora ], !Equals [ !Ref DatabaseEngine, aurora-postgresql ] ]
+  IsAurora: !Or [ !Equals [ !Ref DatabaseEngine, aurora-mysql ], !Equals [ !Ref DatabaseEngine, aurora-postgresql ] ]
 
   IsCustomELBIngress: !Not [ !Equals [ !Ref ELBIngressPort, "" ] ]
 
@@ -400,6 +409,7 @@ Resources:
       Parameters:
         ApplicationName: !Ref AWS::StackName
         EnvironmentName: !Ref EnvironmentName
+        ApplicationSecret: !Ref ApplicationSecret
         NetworkStackName: !GetAtt VpcStack.Outputs.Name
         DatabaseStackName: !GetAtt AuroraStack.Outputs.StackName
         DatabaseName: !Ref DatabaseName

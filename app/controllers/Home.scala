@@ -1,9 +1,9 @@
 package controllers
 
 import com.malliina.refapp.build.BuildInfo
-import com.malliina.refapp.db.{DatabaseConf, HikariConnection}
 import com.malliina.refapp.html.{DemoForm, Pages, UserFeedback}
 import com.malliina.refapp.redis.JedisRedis
+import com.zaxxer.hikari.HikariDataSource
 import controllers.Assets.Asset
 import controllers.Home._
 import play.api.data.Form
@@ -23,12 +23,8 @@ object Home {
   def feedback(input: String) = s"You submitted: '$input'."
 }
 
-class Home(assets: AssetsBuilder, comps: ControllerComponents) extends AbstractController(comps) {
-  val db = DatabaseConf().map { conf =>
-    HikariConnection(conf)
-  }
+class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: HikariDataSource) extends AbstractController(comps) {
   val redis = JedisRedis().toOption
-
   val pages = Pages
 
   def index = okAction(pages.index)
@@ -45,11 +41,10 @@ class Home(assets: AssetsBuilder, comps: ControllerComponents) extends AbstractC
     BadRequest(pages.formPage(Option(UserFeedback(FormFailedMessage, isSuccess = false))))
 
   def info = okAction {
-    val dbMessage = db.map(data => s"Connected to ${data.getJdbcUrl}.").toOption
     val redisMessage = redis.flatMap { c =>
       c.get("test").map(_ => s"Connected to Redis at '${c.host}'.").toOption
     }
-    Json.obj("db" -> dbMessage.toSeq, "redis" -> redisMessage.toSeq)
+    Json.obj("db" -> ds.getJdbcUrl, "redis" -> redisMessage.toSeq)
   }
 
   def health = Action {

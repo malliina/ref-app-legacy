@@ -42,12 +42,12 @@ Parameters:
     ConstraintDescription: Name must begin with a letter and contain only alphanumeric characters
 
   DatabaseEngine:
-    Default: aurora
     Type: String
     Description: Database engines - Aurora MySQL or Aurora PostgreSQL
     ConstraintDescription: Choose an engine from the drop down
+    Default: aurora-mysql
     AllowedValues:
-      - aurora
+      - aurora-mysql
       - aurora-postgresql
 
   EngineMode:
@@ -230,7 +230,7 @@ Conditions:
 
   IsServerless: !Equals [ !Ref EngineMode, serverless ]
 
-  IsAuroraMySQL: !Equals [ !Ref DatabaseEngine, aurora ]
+  IsAuroraMySQL: !Equals [ !Ref DatabaseEngine, aurora-mysql ]
 
   HasCustomPassword: !Not [ !Equals [ !Ref DatabasePassword, "" ] ]
 
@@ -296,7 +296,7 @@ Resources:
       DBSubnetGroupName: !Ref DatabaseSubnetGroup
       StorageEncrypted: !If [ IsServerless, true, !Ref EncryptionAtRest ]
       DatabaseName: !Ref DatabaseName
-      DBClusterParameterGroupName: !If [ IsAuroraMySQL, default.aurora5.6, default.aurora-postgresql9.6 ]
+      DBClusterParameterGroupName: !If [ IsAuroraMySQL, default.aurora-mysql5.7, default.aurora-postgresql9.6 ]
       Port: !If [ IsAuroraMySQL,  3306, 5432 ]
       VpcSecurityGroupIds:
         - Fn::ImportValue: !Sub ${NetworkStackName}-DatabaseGroupID
@@ -311,7 +311,7 @@ Resources:
       DBInstanceClass: !Ref DatabaseInstanceClass
       DBSubnetGroupName: !Ref DatabaseSubnetGroup
       StorageEncrypted: !Ref EncryptionAtRest
-      DBParameterGroupName: !If [ IsAuroraMySQL,  default.aurora5.6, default.aurora-postgresql9.6 ]
+      DBParameterGroupName: !If [ IsAuroraMySQL, default.aurora-mysql5.7, default.aurora-postgresql9.6 ]
       MonitoringInterval: !If [ EnhancedMonitoringSupprtedAndEnabled, 60, 0 ]
       MonitoringRoleArn: !If [ EnhancedMonitoringSupprtedAndEnabled, !GetAtt EnhancedMonitoringRole.Arn, !Ref "AWS::NoValue" ]
       CopyTagsToSnapshot: true

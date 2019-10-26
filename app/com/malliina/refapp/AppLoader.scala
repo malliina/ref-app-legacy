@@ -46,6 +46,6 @@ class AppComponents(context: Context, resolveConf: Configuration => AppConf)
   override val httpFilters: Seq[EssentialFilter] =
     Seq(AccessLogFilter(executionContext), new GzipFilter(), securityHeadersFilter)
   val as = new AssetsBuilder(httpErrorHandler, assetsMetadata)
-  val home = new Home(as, controllerComponents)
+  val home = new Home(as, controllerComponents, db.ds)
   override val router: Router = new Routes(httpErrorHandler, home)
 }

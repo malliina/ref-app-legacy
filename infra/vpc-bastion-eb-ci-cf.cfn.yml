@@ -21,6 +21,14 @@ Parameters:
       - prod
     ConstraintDescription: Specify either dev or prod
 
+  ApplicationSecret:
+    Description: Play application secret
+    NoEcho: true
+    Type: String
+    MinLength: 6
+    MaxLength: 1024
+    ConstraintDescription: Minimum 6 characters
+
   # vpc.cfn.yml parameters
   AvailabilityZone1:
     Description: The first availability zone in the region
@@ -142,6 +150,7 @@ Metadata:
         default: Environment
       Parameters:
         - EnvironmentName
+        - ApplicationSecret
     - Label:
         default: Region Availability Zones
       Parameters:
@@ -247,6 +256,7 @@ Resources:
       Parameters:
         ApplicationName: !Ref AWS::StackName
         EnvironmentName: !Ref EnvironmentName
+        ApplicationSecret: !Ref ApplicationSecret
         NetworkStackName: !GetAtt VpcStack.Outputs.Name
         SSLCertificateArn: !Ref BeanstalkCertificateArn
         AutoScalingMinInstanceCount: !Ref AutoScalingMinInstanceCount
