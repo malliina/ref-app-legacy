@@ -41,7 +41,7 @@ object Pages {
         titleTag("App"),
         link(rel := "shortcut icon", href := s"data:image/png;base64,$faviconContent"),
         link(rel := "stylesheet", href := asset("styles-main.css")),
-        link(rel := "shortcut icon", href := asset("favicon-256.png")),
+        link(rel := "shortcut icon", href := asset("img/favicon-256.png")),
         script(src := asset("main.js"))
       ),
       body(

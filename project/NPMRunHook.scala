@@ -1,7 +1,27 @@
+import NPMRunHook.runProcessSync
 import play.sbt.PlayRunHook
 import sbt._
 
 import scala.sys.process.Process
+
+object NPMRunHook {
+  val isWindows = sys.props("os.name").toLowerCase().contains("win")
+  val cmdPrefix = if (isWindows) "cmd /c " else ""
+  val buildCommand = "npm run build"
+
+  def build(base: File, log: Logger): Unit = runProcessSync(buildCommand, base, log)
+
+  def runProcessSync(command: String, base: File, log: Logger): Unit = {
+    val actualCommand = canonical(command)
+    log.info(s"Running '$actualCommand'...")
+    val rc = Process(actualCommand, base).run(log).exitValue()
+    if (rc != 0) {
+      throw new Exception(s"$actualCommand failed with $rc")
+    }
+  }
+
+  def canonical(command: String) = s"$cmdPrefix$command"
+}
 
 /** Try https://stackoverflow.com/questions/269494/how-can-i-cause-a-child-process-to-exit-when-the-parent-does
   *
@@ -11,18 +31,8 @@ import scala.sys.process.Process
 class NPMRunHook(base: File, target: File, log: Logger) extends PlayRunHook {
   private var watchProcess: Option[Process] = None
 
-  val isWindows = sys.props("os.name").toLowerCase().contains("win")
-  val cmdPrefix = if (isWindows) "cmd /c " else ""
-  val installCommand = s"${cmdPrefix}npm install"
-  val watchCommand = s"${cmdPrefix}npm run watch"
-
-  private def runProcessSync(command: String): Unit = {
-    log.info(s"Running '$command'...")
-    val rc = Process(command, base).run(log).exitValue()
-    if (rc != 0) {
-      throw new Exception(s"$command failed with $rc")
-    }
-  }
+  val installCommand = "npm install"
+  val watchCommand = "npm run watch"
 
   override def beforeStarted(): Unit = {
     val cacheFile = target / "package-json-last-modified"
@@ -36,14 +46,15 @@ class NPMRunHook(base: File, target: File, log: Logger) extends PlayRunHook {
     val lastModified = (base / "package.json").lastModified()
     // Check if package.json has changed since we last ran this
     if (cacheLastModified != lastModified) {
-      runProcessSync(installCommand)
+      runProcessSync(installCommand, base, log)
       IO.write(cacheFile, lastModified.toString)
     }
   }
 
   override def afterStarted(): Unit = {
-    log.info(s"Watching with '$watchCommand'...")
-    watchProcess = Some(Process(watchCommand, base).run(log))
+    val cmd = NPMRunHook.canonical(watchCommand)
+    log.info(s"Watching with '$cmd'...")
+    watchProcess = Some(Process(cmd, base).run(log))
   }
 
   override def afterStopped(): Unit = {
