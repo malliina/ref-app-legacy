@@ -19,8 +19,7 @@ val p = Project("ref-app", file("."))
     libraryDependencies ++= Seq(
       "mysql" % "mysql-connector-java" % "5.1.47",
       "io.getquill" %% "quill-jdbc" % "3.4.10",
-      "org.flywaydb" % "flyway-core" % "6.0.3",
-      "com.zaxxer" % "HikariCP" % "3.3.1",
+      "org.flywaydb" % "flyway-core" % "6.0.7",
       "redis.clients" % "jedis" % "3.1.0",
       "com.lihaoyi" %% "scalatags" % "0.7.0",
       specs2 % Test,
