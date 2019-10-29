@@ -13,6 +13,7 @@ dist
 .hydra
 .bloop
 hydra.sbt
+.metals
 
 # Project exclude paths
 /frontend/node_modules/
