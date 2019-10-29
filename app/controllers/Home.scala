@@ -11,14 +11,18 @@ import play.api.http.Writeable
 import play.api.libs.json.Json
 import play.api.mvc._
 
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
+
 object Home {
   val App = "app"
   val GitHash = "gitHash"
-  val NoCache = "no-cache"
+  val NoCache = "no-cache, no-store, must-revalidate"
   val Version = "version"
   val Welcome = "Welcome"
 
   val FormFailedMessage = "Fill the form properly."
+
+  def cacheControl(ttl: FiniteDuration) = s"public, max-age=${ttl.toSeconds}, immutable"
 
   def feedback(input: String) = s"You submitted: '$input'."
 }
@@ -30,7 +34,7 @@ class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: HikariDataSou
   def index = okAction(pages.index)
 
   def form = Action { req =>
-    Ok(pages.formPage(UserFeedback(req.flash)))
+    Ok(pages.formPage(UserFeedback(req.flash))).withHeaders(CACHE_CONTROL -> NoCache)
   }
 
   def submitForm = Action(parse.form(DemoForm.form, onErrors = (_: Form[String]) => badForm)) { req =>
@@ -52,7 +56,7 @@ class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: HikariDataSou
       .withHeaders(CACHE_CONTROL -> NoCache)
   }
 
-  def okAction[W: Writeable](w: W) = Action(Ok(w))
+  def okAction[W: Writeable](w: W) = Action(Ok(w).withHeaders(CACHE_CONTROL -> cacheControl(60.seconds)))
 
   def versioned(path: String, file: Asset) = assets.versioned(path, file)
 }
