@@ -20,11 +20,10 @@ Parameters:
     Description: Optional custom domain names as a comma-separated string (from e.g. Route 53)
 
   SSLCertificateArn:
-    Description: CloudFront SSL/TLS certificate ARN, must be in us-east-1 region
+    Description: Optional CloudFront SSL/TLS certificate ARN, must be in us-east-1 region
     Type: String
     MinLength: 0
     MaxLength: 2048
-    AllowedPattern: ".*us-east-1.*"
     ConstraintDescription: CloudFront certificates must be in region us-east-1
 
   OriginProtocolPolicy:

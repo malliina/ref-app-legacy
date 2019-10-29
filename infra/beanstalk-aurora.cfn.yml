@@ -16,9 +16,9 @@ Parameters:
   EnvironmentName:
     Description: Name of your environment
     Type: String
-    MinLength: 1
+    MinLength: 4
     MaxLength: 255
-    Default: dev
+    Default: refapp
 
   CNAMEPrefix:
     Description: CNAME prefix for Beanstalk URL (optional)
@@ -89,7 +89,7 @@ Parameters:
     Type: Number
     MinValue: 1
     MaxValue: 20
-    Default: 2
+    Default: 1
     ConstraintDescription: Specify a number between 1 - 20
 
   AutoScalingMaxInstanceCount:
@@ -97,7 +97,7 @@ Parameters:
     Type: Number
     MinValue: 1
     MaxValue: 20
-    Default: 6
+    Default: 4
     ConstraintDescription: Specify a number between 1 - 20
 
   ApplicationSecret:
@@ -187,7 +187,7 @@ Resources:
       - Namespace: aws:autoscaling:launchconfiguration
         OptionName: SecurityGroups
         Value:
-          Fn::ImportValue: !Sub "${NetworkStackName}-AppSecurityGroupID"
+          Fn::ImportValue: !Sub ${NetworkStackName}-AppSecurityGroupID
 
       - Namespace: aws:autoscaling:launchconfiguration
         OptionName: SSHSourceRestriction
