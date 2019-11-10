@@ -41,22 +41,6 @@ Parameters:
     MaxLength: 255
     AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
 
-  DatabaseName:
-    Description: Database name (schema).
-    Type: String
-    MinLength: 1
-    MaxLength: 255
-    AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
-
-  DatabasePassword:
-    NoEcho: true
-    Type: String
-    Description: Database admin account password
-    MinLength: 6
-    MaxLength: 41
-    AllowedPattern: "[a-zA-Z0-9]*"
-    ConstraintDescription: Password must contain only alphanumeric characters
-
   RedisStackName:
     Description: Name of an active Redis stack (optional)
     Type: String
@@ -99,14 +83,6 @@ Parameters:
     MaxValue: 20
     Default: 4
     ConstraintDescription: Specify a number between 1 - 20
-
-  ApplicationSecret:
-    Description: Play application secret
-    NoEcho: true
-    Type: String
-    MinLength: 6
-    MaxLength: 1024
-    ConstraintDescription: Minimum 6 characters
 
 Conditions:
 
@@ -315,20 +291,20 @@ Resources:
 
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: APPLICATION_SECRET
-        Value: !Ref ApplicationSecret
+        Value: !Join ['', ['{{resolve:secretsmanager:', 'dev/refapp/secrets', ':SecretString:appsecret}}' ]]
 
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: DB_PASSWORD
-        Value: !Ref DatabasePassword
+        Value: !Join ['', ['{{resolve:secretsmanager:', 'dev/refapp/aurora', ':SecretString:password}}' ]]
 
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: DB_USER
-        Value:
-          Fn::ImportValue: !Sub ${DatabaseStackName}-DatabaseUser
+        Value: !Join ['', ['{{resolve:secretsmanager:', 'dev/refapp/aurora', ':SecretString:username}}' ]]
 
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: DB_NAME
-        Value: !Ref DatabaseName
+        Value:
+          Fn::ImportValue: !Sub ${DatabaseStackName}-DatabaseName
 
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: DB_HOST
@@ -344,7 +320,8 @@ Resources:
             - !ImportValue
                 "Fn::Sub": ${DatabaseStackName}-DatabaseURL
             - ':3306/'
-            - Ref: DatabaseName
+            - !ImportValue
+                "Fn::Sub": ${DatabaseStackName}-DatabaseName
             - '?useSSL=false'
 
       - Namespace: aws:elasticbeanstalk:application:environment

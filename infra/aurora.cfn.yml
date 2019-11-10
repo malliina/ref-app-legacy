@@ -14,24 +14,6 @@ Parameters:
     MaxLength: 255
     AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
 
-  DatabaseUser:
-    Default: refapp
-    Type: String
-    Description: Database admin account name
-    MinLength: 5
-    MaxLength: 16
-    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
-    ConstraintDescription: Name must begin with a letter and contain only alphanumeric characters
-
-  DatabasePassword:
-    NoEcho: true
-    Type: String
-    Description: Database admin account password
-    MinLength: 8
-    MaxLength: 41
-    AllowedPattern: "[a-zA-Z0-9]*"
-    ConstraintDescription: Only alphanumeric characters, minimum length 8
-
   DatabaseName:
     Default: refapp
     Type: String
@@ -195,8 +177,6 @@ Metadata:
           default: General
         Parameters:
           - DatabaseName
-          - DatabaseUser
-          - DatabasePassword
           - EncryptionAtRest
           - EnvironmentName
           - DatabaseInstanceClass
@@ -233,8 +213,6 @@ Conditions:
 
   IsAuroraMySQL: !Equals [ !Ref DatabaseEngine, aurora-mysql ]
 
-  HasCustomPassword: !Not [ !Equals [ !Ref DatabasePassword, "" ] ]
-
   AlarmsEnabled: !And
     - !Condition IsAuroraMySQL
     - !Equals [ !Ref EnableAlarms, true ]
@@ -245,6 +223,16 @@ Conditions:
 
 
 Resources:
+
+  DatabaseSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Database credentials
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "admin"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\'
 
   EnhancedMonitoringRole:
     Type: AWS::IAM::Role
@@ -292,8 +280,8 @@ Resources:
           MaxCapacity: !Ref MaxCapacity
           SecondsUntilAutoPause: !Ref SecondsUntilAutoPause
         - !Ref "AWS::NoValue"
-      MasterUsername: !Ref DatabaseUser
-      MasterUserPassword: !If [ HasCustomPassword, !Ref DatabasePassword, !If [ IsProd, "{{resolve:ssm-secure:/prod/db/password:1}}", "{{resolve:ssm-secure:/dev/db/password:1}}" ] ]
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', 'dev/refapp/aurora', ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', 'dev/refapp/aurora', ':SecretString:password}}' ]]
       DBSubnetGroupName: !Ref DatabaseSubnetGroup
       StorageEncrypted: !If [ IsServerless, true, !Ref EncryptionAtRest ]
       DatabaseName: !Ref DatabaseName
@@ -488,12 +476,6 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-DatabaseName
 
-  DbUser:
-    Description: Database User
-    Value: !Ref DatabaseUser
-    Export:
-      Name: !Sub ${AWS::StackName}-DatabaseUser
-
   DatabaseAlarmTopicArn:
     Description: Database Alarm Topic ARN
     Condition: AlarmsEnabled
@@ -507,3 +489,9 @@ Outputs:
     Value: !GetAtt DatabaseAlarmTopic.TopicName
     Export:
       Name: !Sub ${AWS::StackName}-DatabaseAlarmTopicName
+
+  DatabaseSecret:
+    Description: Database Secret
+    Value: !Ref DatabaseSecret
+    Export:
+      Name: !Sub ${AWS::StackName}-DatabaseSecret
