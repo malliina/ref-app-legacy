@@ -65,5 +65,9 @@ class NPMRunHook(base: File, target: File, log: Logger) extends PlayRunHook {
   override def afterStopped(): Unit = {
     watchProcess.foreach(_.destroy())
     watchProcess = None
+    if (NPMRunHook.isWindows) {
+      // Node child processes are not properly killed with `process.destroy()` on Windows. This gets the job done.
+      runProcessSync("taskkill /im node.exe /F", base, log)
+    }
   }
 }
