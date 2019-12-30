@@ -30,6 +30,7 @@ Parameters:
   NetworkStackName:
     Description: Name of an active CloudFormation stack of networking resources
     Type: String
+    Default: vpc
     MinLength: 1
     MaxLength: 255
     AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
@@ -113,11 +114,6 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth
         - arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService
-
-  Application:
-    Type: AWS::ElasticBeanstalk::Application
-    Properties:
-      ApplicationName: !Ref ApplicationName
 
   Environment:
     Type: AWS::ElasticBeanstalk::Environment
@@ -400,12 +396,6 @@ Outputs:
         - !Sub '.${AWS::Region}.elasticbeanstalk.com'
     Export:
       Name: !Sub ${AWS::StackName}-BeanstalkURL
-
-  ApplicationName:
-    Description: Application Name
-    Value: !Ref ApplicationName
-    Export:
-      Name: !Sub ${AWS::StackName}-ApplicationName
 
   EnvironmentName:
     Description: Environment Name

@@ -12,6 +12,7 @@ logs
 dist
 .hydra
 .bloop
+out
 hydra.sbt
 .metals
 

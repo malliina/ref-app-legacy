@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Elastic Beanstalk application
+
+Parameters:
+
+  ApplicationName:
+    Description: Name of your application
+    Type: String
+    Default: app
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
+
+Resources:
+
+  Application:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName: !Ref ApplicationName
+
+Outputs:
+
+  ApplicationName:
+    Description: Application Name
+    Value: !Ref ApplicationName
+    Export:
+      Name: !Sub ${AWS::StackName}-ApplicationName
