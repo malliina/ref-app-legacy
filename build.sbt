@@ -37,6 +37,7 @@ val p = Project("ref-app", file("."))
     daemonUser in Docker := "daemon",
     dockerRepository := Option("malliina"),
     dockerExposedPorts := Seq(dockerHttpPort.value),
+    javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     javaOptions in Universal ++= Seq(
       "-J-Xmx256m",
       s"-Dhttp.port=${dockerHttpPort.value}"
@@ -55,7 +56,6 @@ val p = Project("ref-app", file("."))
     stage in Frontend := NPMRunHook.stage((baseDirectory in Frontend).value, streams.value.log),
     stage in Docker := (stage in Docker).dependsOn(stage in Frontend).value,
     stage in Universal := (stage in Universal).dependsOn(stage in Frontend).value,
-//    stage in Beanstalk := {},
     stage in Beanstalk := (stage in Beanstalk).dependsOn(stage in Universal).value,
     mappings in Universal ++= contentOf("src/universal")
   )

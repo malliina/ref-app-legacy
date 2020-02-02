@@ -64,6 +64,14 @@ Parameters:
     AllowedPattern: '[a-zA-Z0-9][-a-zA-Z0-9]*'
     ConstraintDescription: must contain only alphanumeric characters.
 
+  BeanstalkPlatform:
+    Type: String
+    Description: Beanstalk Platform - docker or java
+    Default: docker
+    AllowedValues:
+      - docker
+      - java
+
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -83,6 +91,7 @@ Metadata:
         Parameters:
           - ApplicationName
           - BeanstalkEnvironment
+          - BeanstalkPlatform
 
 Conditions:
 

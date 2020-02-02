@@ -129,7 +129,7 @@ Resources:
     Type: AWS::ElasticBeanstalk::Environment
     Properties:
       EnvironmentName: !Ref EnvironmentName
-      ApplicationName: !Ref Application
+      ApplicationName: !Ref ApplicationName
       CNAMEPrefix: !If [ HasCNAMEPrefix, !Ref CNAMEPrefix, !Ref "AWS::NoValue" ]
       TemplateName: !Ref ConfigurationTemplate
     DependsOn:
@@ -141,7 +141,7 @@ Resources:
   ConfigurationTemplate:
     Type: AWS::ElasticBeanstalk::ConfigurationTemplate
     Properties:
-      ApplicationName: !Ref Application
+      ApplicationName: !Ref ApplicationName
       SolutionStackName: !FindInMap [ StackMap, !Ref BeanstalkPlatform, stackName ]
       OptionSettings:
 
@@ -349,6 +349,10 @@ Resources:
             - HasRedis
             - "Fn::ImportValue": !Sub ${RedisStackName}-Port
             - ''
+
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: PORT
+        Value: 9000
 
   # IAM resources
   AppRole:
