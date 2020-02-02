@@ -87,6 +87,7 @@ Metadata:
 Conditions:
 
   WebhookEnabled: !Not [ !Equals [ !Ref GitHubWebhookSecret, "" ] ]
+  IsDocker: [ !Equals [ !Ref BeanstalkPlatform, docker ] ]
 
 Resources:
 
@@ -103,6 +104,7 @@ Resources:
         ComputeType: !Ref CodeBuildEnvironment
         Image: 'aws/codebuild/standard:2.0'
       Source:
+        BuildSpec: !If [ IsDocker, buildspec.yml, buildspec-java.yml ]
         Type: CODEPIPELINE
       TimeoutInMinutes: 30
 

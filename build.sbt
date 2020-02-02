@@ -1,3 +1,5 @@
+import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper.contentOf
+
 import scala.sys.process.Process
 import scala.util.Try
 
@@ -5,6 +7,7 @@ val gitHash = settingKey[String]("Git hash")
 val dockerHttpPort = settingKey[Int]("HTTP listen port")
 val defaultPort = 9000
 val Frontend = config("frontend")
+val Beanstalk = config("beanstalk")
 val testContainersScalaVersion = "0.35.0"
 
 val p = Project("ref-app", file("."))
@@ -50,7 +53,11 @@ val p = Project("ref-app", file("."))
     unmanagedResourceDirectories in Assets += (baseDirectory in Frontend).value / "dist",
     PlayKeys.playRunHooks += new NPMRunHook((baseDirectory in Frontend).value, target.value, streams.value.log),
     stage in Frontend := NPMRunHook.stage((baseDirectory in Frontend).value, streams.value.log),
-    stage in Docker := (stage in Docker).dependsOn(stage in Frontend).value
+    stage in Docker := (stage in Docker).dependsOn(stage in Frontend).value,
+    stage in Universal := (stage in Universal).dependsOn(stage in Frontend).value,
+//    stage in Beanstalk := {},
+    stage in Beanstalk := (stage in Beanstalk).dependsOn(stage in Universal).value,
+    mappings in Universal ++= contentOf("src/universal")
   )
 
 Global / onChangedBuildSource := ReloadOnSourceChanges

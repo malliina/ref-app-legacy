@@ -16,9 +16,8 @@ phases:
       - echo $CODEBUILD_WEBHOOK_HEAD_REF
       - echo $CODEBUILD_SOURCE_VERSION
       - printenv
-      - sbt clean docker:stage
+      - sbt clean universal:stage
 artifacts:
   files:
-    - Dockerfile
-    - opt/**/*
-  base-directory: target/docker/stage
+    - '**/*'
+  base-directory: target/universal/stage

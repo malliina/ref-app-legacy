@@ -20,6 +20,14 @@ Parameters:
     MaxLength: 255
     Default: refapp
 
+  BeanstalkPlatform:
+    Type: String
+    Description: Beanstalk Platform - docker or java
+    Default: docker
+    AllowedValues:
+      - docker
+      - java
+
   CNAMEPrefix:
     Description: CNAME prefix for Beanstalk URL (optional)
     Type: String
@@ -95,7 +103,9 @@ Mappings:
   # Maps stack type parameter to solution stack name string
   StackMap:
     docker:
-      stackName: 64bit Amazon Linux 2018.03 v2.12.17 running Docker 18.06.1-ce
+      stackName: 64bit Amazon Linux 2018.03 v2.14.1 running Docker 18.09.9-ce
+    java:
+      stackName: 64bit Amazon Linux 2018.03 v2.10.2 running Java 8
 
 Resources:
 
@@ -132,7 +142,7 @@ Resources:
     Type: AWS::ElasticBeanstalk::ConfigurationTemplate
     Properties:
       ApplicationName: !Ref Application
-      SolutionStackName: !FindInMap [ StackMap, docker, stackName ]
+      SolutionStackName: !FindInMap [ StackMap, !Ref BeanstalkPlatform, stackName ]
       OptionSettings:
 
       - Namespace: aws:elasticbeanstalk:environment
@@ -296,6 +306,10 @@ Resources:
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: DB_USER
         Value: !Join ['', ['{{resolve:secretsmanager:', 'dev/refapp/aurora', ':SecretString:username}}' ]]
+
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: DB_ENABLED
+        Value: false
 
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: DB_NAME
