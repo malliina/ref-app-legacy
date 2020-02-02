@@ -1,10 +1,12 @@
 package com.malliina.refapp.db
 
+import com.dimafeng.testcontainers.{ForAllTestContainer, MySQLContainer}
 import org.scalatest.FunSuite
-import tests.EmbeddedMySQL
+import tests.TestConf
 
-class RefDatabaseTests extends FunSuite with EmbeddedMySQL {
-  val refDatabase = RefDatabase.withMigrations(conf)
+class RefDatabaseTests extends FunSuite with ForAllTestContainer {
+  override val container = MySQLContainer()
+  lazy val refDatabase = RefDatabase.withMigrations(TestConf(container))
 
   test("make queries") {
     val initial = refDatabase.persons(10)
@@ -22,10 +24,6 @@ class RefDatabaseTests extends FunSuite with EmbeddedMySQL {
       refDatabase.remove(p.id)
     }
     assert(refDatabase.persons(0).size === 0)
-  }
-
-  override protected def afterAll(): Unit = {
     refDatabase.close()
-    super.afterAll()
   }
 }

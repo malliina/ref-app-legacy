@@ -36,6 +36,11 @@ class AppLoader extends LoggingAppLoader[AppComponents] {
     new AppComponents(context, conf => new ProdAppConf(conf))
 }
 
+object AppComponents {
+  def apply(context: Context, resolveConf: Configuration => AppConf): AppComponents =
+    new AppComponents(context, resolveConf)
+}
+
 class AppComponents(context: Context, resolveConf: Configuration => AppConf)
     extends BuiltInComponentsFromContext(context)
     with HttpFiltersComponents

@@ -1,26 +1,42 @@
 package tests
 
-import com.malliina.refapp.{AppComponents, AppConf, WithComponents}
+import com.dimafeng.testcontainers.{ForAllTestContainer, MySQLContainer}
 import com.malliina.refapp.db.DatabaseConf
+import com.malliina.refapp.{AppComponents, AppConf, WithComponents}
 import org.scalatest.{FunSuite, Suite, TestSuite}
 import org.scalatestplus.selenium.WebBrowser
 import play.api.ApplicationLoader
 
-class TestAppConf(val database: DatabaseConf) extends AppConf
+case class TestAppConf(database: DatabaseConf) extends AppConf
+object TestConf {
+  def apply(container: MySQLContainer): DatabaseConf =
+    DatabaseConf(s"${container.jdbcUrl}?useSSL=false", container.username, container.password)
+}
 
 /** Launches the server at some port for the duration of the test.
+  *
+  * Uses a Docker MySQL container as a test database.
   */
-trait RefServerSuite extends OneServerPerSuite2[AppComponents] with EmbeddedMySQL {
+trait RefServerSuite extends FunSuite with OneServerPerSuite2[AppComponents] with ForAllTestContainer {
   self: TestSuite =>
-  override def createComponents(context: ApplicationLoader.Context): AppComponents =
-    new AppComponents(context, _ => new TestAppConf(conf))
+  override val container = MySQLContainer()
+
+  override def createComponents(context: ApplicationLoader.Context): AppComponents = {
+    container.start()
+    val conf = TestConf(container)
+    AppComponents(context, _ => TestAppConf(conf))
+  }
 }
 
 abstract class BrowserSuite extends FunSuite with RefServerSuite with WebBrowser
 
-trait TestComponents extends EmbeddedMySQL with WithComponents[AppComponents] { self: Suite =>
-  override def createComponents(context: ApplicationLoader.Context): AppComponents =
-    new AppComponents(context, _ => new TestAppConf(conf))
+trait TestComponents extends FunSuite with WithComponents[AppComponents] with ForAllTestContainer { self: Suite =>
+  override val container = MySQLContainer()
+
+  override def createComponents(context: ApplicationLoader.Context): AppComponents = {
+    val conf = TestConf(container)
+    AppComponents(context, _ => TestAppConf(conf))
+  }
 }
 
 /** Launches the app for the duration of the test.

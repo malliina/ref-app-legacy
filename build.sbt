@@ -5,6 +5,7 @@ val gitHash = settingKey[String]("Git hash")
 val dockerHttpPort = settingKey[Int]("HTTP listen port")
 val defaultPort = 9000
 val Frontend = config("frontend")
+val testContainersScalaVersion = "0.35.0"
 
 val p = Project("ref-app", file("."))
   .enablePlugins(PlayScala, BuildInfoPlugin, DockerPlugin)
@@ -17,16 +18,17 @@ val p = Project("ref-app", file("."))
       "UTF-8"
     ),
     libraryDependencies ++= Seq(
-      "mysql" % "mysql-connector-java" % "5.1.47",
-      "io.getquill" %% "quill-jdbc" % "3.4.10",
+      "mysql" % "mysql-connector-java" % "5.1.48",
+      "io.getquill" %% "quill-jdbc" % "3.5.0",
       "org.flywaydb" % "flyway-core" % "5.2.4",
 //      "org.flywaydb" % "flyway-core" % "6.0.7",
-      "redis.clients" % "jedis" % "3.1.0",
-      "com.lihaoyi" %% "scalatags" % "0.7.0",
+      "redis.clients" % "jedis" % "3.2.0",
+      "com.lihaoyi" %% "scalatags" % "0.8.4",
       specs2 % Test,
-      "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test,
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test,
       "org.seleniumhq.selenium" % "selenium-java" % "3.141.59" % Test,
-      "ch.vorburger.mariaDB4j" % "mariaDB4j" % "2.4.0" % Test
+      "com.dimafeng" %% "testcontainers-scala-scalatest" % testContainersScalaVersion % Test,
+      "com.dimafeng" %% "testcontainers-scala-mysql" % testContainersScalaVersion % Test
     ),
     dockerBaseImage := "openjdk:11",
     daemonUser in Docker := "daemon",
@@ -50,3 +52,5 @@ val p = Project("ref-app", file("."))
     stage in Frontend := NPMRunHook.stage((baseDirectory in Frontend).value, streams.value.log),
     stage in Docker := (stage in Docker).dependsOn(stage in Frontend).value
   )
+
+Global / onChangedBuildSource := ReloadOnSourceChanges
