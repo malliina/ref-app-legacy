@@ -10,7 +10,7 @@ import play.api.ApplicationLoader
 case class TestAppConf(database: DatabaseConf) extends AppConf
 object TestConf {
   def apply(container: MySQLContainer): DatabaseConf =
-    DatabaseConf(s"${container.jdbcUrl}?useSSL=false", container.username, container.password)
+    DatabaseConf(true, s"${container.jdbcUrl}?useSSL=false", container.username, container.password)
 }
 
 /** Launches the server at some port for the duration of the test.

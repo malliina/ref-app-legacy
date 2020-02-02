@@ -9,6 +9,8 @@ import org.flywaydb.core.Flyway
 object RefDatabase {
   def apply(conf: DatabaseConf): RefDatabase = new RefDatabase(HikariConnection(conf))
 
+  def opt(conf: DatabaseConf): Option[RefDatabase] = if (conf.enabled) Option(withMigrations(conf)) else None
+
   def withMigrations(conf: DatabaseConf): RefDatabase = {
     val flyway = Flyway
       .configure()

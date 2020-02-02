@@ -27,7 +27,8 @@ object Home {
   def feedback(input: String) = s"You submitted: '$input'."
 }
 
-class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: HikariDataSource) extends AbstractController(comps) {
+class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: Option[HikariDataSource])
+    extends AbstractController(comps) {
   val redis = JedisRedis().toOption
   val pages = Pages
 
@@ -48,7 +49,9 @@ class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: HikariDataSou
     val redisMessage = redis.flatMap { c =>
       c.get("test").map(_ => s"Connected to Redis at '${c.host}'.").toOption
     }
-    Json.obj("db" -> ds.getJdbcUrl, "redis" -> redisMessage.toSeq)
+    Json.obj("db" -> ds.map { ds =>
+      ds.getJdbcUrl
+    }.toSeq, "redis" -> redisMessage.toSeq)
   }
 
   def health = Action {
