@@ -96,7 +96,7 @@ Metadata:
 Conditions:
 
   WebhookEnabled: !Not [ !Equals [ !Ref GitHubWebhookSecret, "" ] ]
-  IsDocker: [ !Equals [ !Ref BeanstalkPlatform, docker ] ]
+  IsDocker: !Equals [ !Ref BeanstalkPlatform, docker ]
 
 Resources:
 
