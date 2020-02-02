@@ -49,10 +49,19 @@ The app should now run at http://localhost:9000.
 
 ## AWS and Deployments
 
-Use the CloudFormation templates in [infra](infra) to deploy.
-1. Deploy [this app](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=ref-app&templateURL=https://s3.amazonaws.com/ref-app-templates-public/vpc-bastion-aurora-eb-ci.cfn.yml) to setup the whole stack.
+Use the CloudFormation templates in [infra](infra) to deploy:
 
-The template will provision infrastructure and launch the app. Pushing to master will trigger a redeploy.
+1. Deploy a VPC with [vpc.cfn.yml](infra/vpc.cfn.yml)
+1. Optionally deploy a database with [aurora.cfn.yml](infra/aurora.cfn.yml)
+1. Deploy a Beanstalk Application with [beanstalk-app.cfn.yml](infra/beanstalk-app.cfn.yml)
+1. Deploy a Beanstalk Environment with [beanstalk-aurora.cfn.yml](infra/beanstalk-aurora.cfn.yml)
+1. Deploy a CI pipeline with [codepipeline.cfn.yml](infra/codepipeline.cfn.yml)
+
+Both [Single Container Docker](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/single-container-docker.html) and 
+[Java SE](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/java-se-platform.html) platforms are supported. With
+Java SE, deployments from source code to production of a medium sized app can be done in less than five minutes.
+
+The templates will provision infrastructure and launch the app. Pushing to master will trigger a redeploy.
 
 ## Formatting
 
