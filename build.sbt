@@ -24,7 +24,6 @@ val p = Project("ref-app", file("."))
       "mysql" % "mysql-connector-java" % "5.1.48",
       "io.getquill" %% "quill-jdbc" % "3.5.0",
       "org.flywaydb" % "flyway-core" % "5.2.4",
-//      "org.flywaydb" % "flyway-core" % "6.0.7",
       "redis.clients" % "jedis" % "3.2.0",
       "com.lihaoyi" %% "scalatags" % "0.8.4",
       specs2 % Test,

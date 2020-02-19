@@ -7,13 +7,13 @@ A reference application.
 
 ## Components
 
-- [Scala](https://www.scala-lang.org/) / [Play](https://www.playframework.com/) backend
-- Database connectivity with [Quill](https://getquill.io/) and migrations with [Flyway](https://flywaydb.org/)
-- Server-rendered HTML with [ScalaTags](http://www.lihaoyi.com/scalatags/)
-- Webpack-generated frontend assets in [frontend](frontend) including TypeScript and SASS
+- [Scala](https://www.scala-lang.org/) / [Play](https://www.playframework.com/) backend.
+- Database connectivity with [Quill](https://getquill.io/) and migrations with [Flyway](https://flywaydb.org/).
+- Server-rendered HTML with [ScalaTags](http://www.lihaoyi.com/scalatags/).
+- Webpack-generated frontend assets in [frontend](frontend) including TypeScript and SASS.
 - [Selenium](http://www.scalatest.org/user_guide/using_selenium) tests in [SeleniumTests.scala](test/tests/SeleniumTests.scala)
-with embedded MariaDB via [MariaDB4j](https://github.com/vorburger/MariaDB4j)
-- AWS CloudFormation [templates](infra) for deployment to [AWS Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/)
+with [testcontainers-scala](https://github.com/testcontainers/testcontainers-scala).
+- AWS CloudFormation [templates](infra) for deployment to [AWS Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/).
 
 ## Running
 
@@ -31,7 +31,7 @@ To run the app:
 
 The app should now run at http://localhost:9000.
 
-A [Play run hook](https://www.playframework.com/documentation/2.7.x/sbtCookbook#Hooking-into-Plays-dev-mode) 
+A [Play run hook](https://www.playframework.com/documentation/2.8.x/sbtCookbook#Hooking-into-Plays-dev-mode) 
 in [NPMRunHook.scala](project/NPMRunHook.scala) launches `npm` when `sbt run` is started, therefore:
 
 - both the backend and frontend are built at the same time

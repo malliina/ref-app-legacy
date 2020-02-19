@@ -8,6 +8,7 @@ import org.scalatestplus.selenium.WebBrowser
 import play.api.ApplicationLoader
 
 case class TestAppConf(database: DatabaseConf) extends AppConf
+
 object TestConf {
   def apply(container: MySQLContainer): DatabaseConf =
     DatabaseConf(true, s"${container.jdbcUrl}?useSSL=false", container.username, container.password)
