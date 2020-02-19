@@ -20,8 +20,9 @@ Parameters:
     Description: Optional custom domain names as a comma-separated string (from e.g. Route 53)
 
   SSLCertificateArn:
-    Description: Optional CloudFront SSL/TLS certificate ARN, must be in us-east-1 region
-    Type: String
+    Description: Optional CloudFront SSL/TLS certificate ARN, must be in us-east-1 region (SSM parameter)
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /global/certificates/arn
     MinLength: 0
     MaxLength: 2048
     ConstraintDescription: CloudFront certificates must be in region us-east-1
