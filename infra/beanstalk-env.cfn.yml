@@ -1,8 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-# App stack creation prerequisites: first create a VPC stack
-
-Description: Elastic Beanstalk
+Description: Elastic Beanstalk environment
 
 Parameters:
 
@@ -178,7 +176,7 @@ Resources:
 
       - Namespace: aws:elasticbeanstalk:command
         OptionName: DeploymentPolicy
-        Value: Rolling
+        Value: RollingWithAdditionalBatch
 
       - Namespace: aws:autoscaling:updatepolicy:rollingupdate
         OptionName: RollingUpdateEnabled
