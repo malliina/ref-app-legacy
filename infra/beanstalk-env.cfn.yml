@@ -176,6 +176,10 @@ Resources:
         OptionName: EC2KeyName
         Value: !Ref EC2KeyPairName
 
+      - Namespace: aws:elasticbeanstalk:command
+        OptionName: DeploymentPolicy
+        Value: Rolling
+
       - Namespace: aws:autoscaling:updatepolicy:rollingupdate
         OptionName: RollingUpdateEnabled
         Value: true
