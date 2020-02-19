@@ -285,7 +285,7 @@ Resources:
 
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: APPLICATION_SECRET
-        Value: !Join ['', ['{{resolve:secretsmanager:', 'dev/refapp/secrets', ':SecretString:appsecret}}' ]]
+        Value: !Join ['', [ '{{resolve:secretsmanager:', 'dev/refapp/secrets', ':SecretString:appsecret}}' ]]
 
   # IAM resources
   AppRole:
