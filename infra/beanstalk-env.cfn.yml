@@ -283,6 +283,10 @@ Resources:
         OptionName: PORT
         Value: 9000
 
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: APPLICATION_SECRET
+        Value: !Join ['', ['{{resolve:secretsmanager:', 'dev/refapp/secrets', ':SecretString:appsecret}}' ]]
+
   # IAM resources
   AppRole:
     Type: AWS::IAM::Role
