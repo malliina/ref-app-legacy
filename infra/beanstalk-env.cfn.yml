@@ -54,11 +54,11 @@ Parameters:
     MaxLength: 255
 
   SSLCertificateArn:
-    Description: The SSL/TLS certificate ARN (optional)
-    Type: String
+    Description: Optional SSL/TLS certificate ARN, must be in the same region as the environment
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /global/certificates/arn-eu-west-1
     MinLength: 0
     MaxLength: 2048
-    Default: ""
 
   AutoScalingMinInstanceCount:
     Description: Minimum number of EC2 instances for Auto Scaling
@@ -228,10 +228,6 @@ Resources:
             - !ImportValue
                 "Fn::Sub": ${NetworkStackName}-PublicSubnet2ID
 
-      - Namespace: aws:elbv2:listener:default
-        OptionName: ListenerEnabled
-        Value: !If [ TlsEnabled, false, true ]
-
       - Namespace: aws:elbv2:loadbalancer
         OptionName: SecurityGroups
         Value:
@@ -242,9 +238,9 @@ Resources:
         Value:
            Fn::ImportValue: !Sub ${NetworkStackName}-ELBSecurityGroupID
 
-      - Namespace: aws:elbv2:listenerrule:default
-        OptionName: PathPatterns
-        Value: "/*"
+      - Namespace: aws:elbv2:listener:default
+        OptionName: ListenerEnabled
+        Value: !If [ TlsEnabled, false, true ]
 
       - Namespace: !Sub
         - "aws:elbv2:listener:${ListenPort}"
@@ -266,6 +262,10 @@ Resources:
             "Fn::ImportValue": !Sub ${NetworkStackName}-ELBIngressPort
         OptionName: SSLCertificateArns
         Value: !Ref SSLCertificateArn
+
+      - Namespace: aws:elbv2:listenerrule:default
+        OptionName: PathPatterns
+        Value: "/*"
 
         # CLOUDWATCH LOGS
       - Namespace: aws:elasticbeanstalk:cloudwatch:logs
