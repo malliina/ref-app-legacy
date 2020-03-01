@@ -61,5 +61,6 @@ class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: Option[Hikari
 
   def okAction[W: Writeable](w: W) = Action(Ok(w).withHeaders(CACHE_CONTROL -> cacheControl(60.seconds)))
 
+  def static(file: String) = assets.at("/public", file, aggressiveCaching = true)
   def versioned(path: String, file: Asset) = assets.versioned(path, file)
 }

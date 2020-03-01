@@ -1,5 +1,8 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const isDevelopment = false
+const path = require('path');
+const rootDir = path.resolve(__dirname);
+const cssDir = path.resolve(rootDir, 'src');
 
 module.exports = {
     mode: "production",
@@ -17,7 +20,10 @@ module.exports = {
             chunkFilename: 'styles-[id].css'
         })
     ],
-
+    entry: {
+        main: [path.resolve(cssDir, './index.ts')],
+        fonts: [path.resolve(cssDir, './fonts.ts')],
+    },
     module: {
         rules: [
             {
@@ -66,6 +72,13 @@ module.exports = {
                             sourceMap: isDevelopment
                         }
                     }
+                ]
+            },
+            // Inlines any font file less than 256KB; larger go hashed to static/fonts/...
+            {
+                test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+                use: [
+                    { loader: 'url-loader', options: { limit: 262144, name: 'static/fonts/[name]-[hash].[ext]' } }
                 ]
             }
         ]

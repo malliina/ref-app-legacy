@@ -40,8 +40,9 @@ object Pages {
       head(
         titleTag("App"),
         link(rel := "shortcut icon", href := s"data:image/png;base64,$faviconContent"),
+//        link(rel := "shortcut icon", href := asset("img/favicon-256.png")),
+        link(rel := "stylesheet", href := asset("styles-fonts.css")),
         link(rel := "stylesheet", href := asset("styles-main.css")),
-        link(rel := "shortcut icon", href := asset("img/favicon-256.png")),
         script(src := asset("main.js"))
       ),
       body(

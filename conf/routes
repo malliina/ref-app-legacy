@@ -1,6 +1,7 @@
-GET         /                    controllers.Home.index
-GET         /info                controllers.Home.info
-GET         /form                controllers.Home.form
-POST        /form                controllers.Home.submitForm
-GET         /health              controllers.Home.health
-GET         /assets/*file        controllers.Home.versioned(path = "/public", file: Asset)
+GET         /                           controllers.Home.index
+GET         /info                       controllers.Home.info
+GET         /form                       controllers.Home.form
+POST        /form                       controllers.Home.submitForm
+GET         /health                     controllers.Home.health
+GET         /assets/static/*file        controllers.Home.static(file)
+GET         /assets/*file               controllers.Home.versioned(path = "/public", file: Asset)
