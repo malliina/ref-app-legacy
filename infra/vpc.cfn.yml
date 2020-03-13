@@ -33,6 +33,14 @@ Parameters:
     ConstraintDescription: TCP ports must be between 0 - 65535
     Default: 80
 
+  SecureELBIngressPort:
+    Description: The secure ELB ingress port used by security groups
+    Type: Number
+    MinValue: 0
+    MaxValue: 65535
+    ConstraintDescription: TCP ports must be between 0 - 65535
+    Default: 443
+
   AppIngressPort:
     Description: The application ingress port used by security groups
     Type: Number
@@ -62,6 +70,7 @@ Metadata:
           default: Ingress Ports
         Parameters:
           - ELBIngressPort
+          - SecureELBIngressPort
           - AppIngressPort
     ParameterLabels:
       AvailabilityZone1:
@@ -70,6 +79,8 @@ Metadata:
         default: Availability Zone 2
       ELBIngressPort:
         default: Load Balancer Port
+      SecureELBIngressPort:
+        default: Secure Load Balancer Port
       AppIngressPort:
         default: Application Port
 
@@ -207,6 +218,10 @@ Resources:
         IpProtocol: tcp
         ToPort: !Ref ELBIngressPort
         FromPort: !Ref ELBIngressPort
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        ToPort: !Ref SecureELBIngressPort
+        FromPort: !Ref SecureELBIngressPort
       Tags:
       - Key: Name
         Value: !Sub "${AWS::StackName}-ELBSecurityGroup"
@@ -544,6 +559,12 @@ Outputs:
     Value: !Ref ELBIngressPort
     Export:
       Name: !Sub ${AWS::StackName}-ELBIngressPort
+
+  SecureELBIngressPort:
+    Description: Secure ELB ingress port
+    Value: !Ref SecureELBIngressPort
+    Export:
+      Name: !Sub ${AWS::StackName}-SecureELBIngressPort
 
   AppIngressPort:
     Description: App ingress port

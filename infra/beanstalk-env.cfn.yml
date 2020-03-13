@@ -76,6 +76,25 @@ Parameters:
     Default: 4
     ConstraintDescription: Specify a number between 1 - 20
 
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Beanstalk Application
+        Parameters:
+          - ApplicationName
+          - EnvironmentName
+          - CNAMEPrefix
+          - BeanstalkPlatform
+          - InstanceType
+          - SSLCertificateArn
+          - AutoScalingMinInstanceCount
+          - AutoScalingMaxInstanceCount
+      - Label:
+          default: Networking
+        Parameters:
+          - EC2KeyPairName
+          - NetworkStackName
 Conditions:
 
   TlsEnabled: !Not [ !Equals [ !Ref SSLCertificateArn, "" ] ]
@@ -126,6 +145,10 @@ Resources:
       ApplicationName: !Ref ApplicationName
       SolutionStackName: !FindInMap [ StackMap, !Ref BeanstalkPlatform, stackName ]
       OptionSettings:
+        # Deployments
+      - Namespace: aws:elasticbeanstalk:command
+        OptionName: DeploymentPolicy
+        Value: AllAtOnce # RollingWithAdditionalBatch is better but slower
 
       - Namespace: aws:elasticbeanstalk:environment
         OptionName: EnvironmentType
@@ -240,32 +263,44 @@ Resources:
 
       - Namespace: aws:elbv2:listener:default
         OptionName: ListenerEnabled
-        Value: !If [ TlsEnabled, false, true ]
+        Value: true
 
       - Namespace: !Sub
-        - "aws:elbv2:listener:${ListenPort}"
-        - ListenPort:
-            "Fn::ImportValue": !Sub ${NetworkStackName}-ELBIngressPort
-        OptionName: Protocol
-        Value: !If [ TlsEnabled, HTTPS, HTTP ]
+          - "aws:elbv2:listener:${ListenPort}"
+          - ListenPort:
+              "Fn::ImportValue": !Sub ${NetworkStackName}-ELBIngressPort
+          OptionName: Protocol
+          Value: !If [ TlsEnabled, HTTPS, HTTP ]
 
       - Namespace: !Sub
-        - "aws:elbv2:listener:${ListenPort}"
-        - ListenPort:
-            "Fn::ImportValue": !Sub ${NetworkStackName}-ELBIngressPort
+          - "aws:elbv2:listener:${ListenPort}"
+          - ListenPort:
+              "Fn::ImportValue": !Sub ${NetworkStackName}-ELBIngressPort
         OptionName: Rules
         Value: default
 
       - Namespace: !Sub
-        - "aws:elbv2:listener:${ListenPort}"
-        - ListenPort:
-            "Fn::ImportValue": !Sub ${NetworkStackName}-ELBIngressPort
+          - "aws:elbv2:listener:${ListenPort}"
+          - ListenPort:
+              "Fn::ImportValue": !Sub ${NetworkStackName}-ELBIngressPort
         OptionName: SSLCertificateArns
         Value: !Ref SSLCertificateArn
 
       - Namespace: aws:elbv2:listenerrule:default
         OptionName: PathPatterns
         Value: "/*"
+
+      - Namespace: aws:elasticbeanstalk:environment:process:default
+        OptionName: HealthCheckPath
+        Value: "/"
+
+      - Namespace: aws:elasticbeanstalk:environment:process:default
+        OptionName: StickinessEnabled
+        Value: true
+
+      - Namespace: aws:elasticbeanstalk:environment:process:default
+        OptionName: StickinessLBCookieDuration
+        Value: 3600 # seconds
 
         # CLOUDWATCH LOGS
       - Namespace: aws:elasticbeanstalk:cloudwatch:logs

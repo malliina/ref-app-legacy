@@ -1,7 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-# Prerequisites: Have your GitHub access token in Secrets Manager with name dev/github/token and key GitHubAccessToken
-
 Description: CodePipeline with Secrets Manager
 
 Parameters:
@@ -15,18 +13,9 @@ Parameters:
       - BUILD_GENERAL1_MEDIUM
       - BUILD_GENERAL1_LARGE
 
-  GitHubOwner:
+  RepositoryName:
     Type: String
-    Description: GitHub owner or user
-    Default: malliina
-    MinLength: 1
-    MaxLength: 256
-    AllowedPattern: '[a-zA-Z0-9][-a-zA-Z0-9]*'
-    ConstraintDescription: must contain only alphanumeric characters.
-
-  GitHubRepository:
-    Type: String
-    Description: GitHub repository
+    Description: Repository name
     Default: ref-app
     MinLength: 1
     MaxLength: 256
@@ -39,14 +28,6 @@ Parameters:
     MinLength: 1
     MaxLength: 256
     Default: master
-
-  GitHubWebhookSecret:
-    NoEcho: true
-    Type: String
-    Description: Optional GitHub webhook secret for the repo
-    MinLength: 0
-    MaxLength: 256
-    Default: ""
 
   ApplicationName:
     Type: String
@@ -78,10 +59,8 @@ Metadata:
       - Label:
           default: Application Source
         Parameters:
-          - GitHubOwner
-          - GitHubRepository
+          - RepositoryName
           - Branch
-          - GitHubWebhookSecret
       - Label:
           default: Build Image
         Parameters:
@@ -95,10 +74,60 @@ Metadata:
 
 Conditions:
 
-  WebhookEnabled: !Not [ !Equals [ !Ref GitHubWebhookSecret, "" ] ]
   IsDocker: !Equals [ !Ref BeanstalkPlatform, docker ]
 
 Resources:
+
+  CodeCommitRepository:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryDescription: !Join [" ", ["Repository for", !Ref RepositoryName ]]
+      RepositoryName: !Ref RepositoryName
+
+  CloudWatchEventRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: cwe-pipeline-execution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: codepipeline:StartPipelineExecution
+                Resource: !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref AppPipeline ] ]
+
+  CloudWatchEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.codecommit
+        detail-type:
+          - 'CodeCommit Repository State Change'
+        resources:
+          - !Join [ '', [ 'arn:aws:codecommit:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref RepositoryName ] ]
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType:
+            - branch
+          referenceName:
+            - master
+      Targets:
+        - Arn:
+            !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref AppPipeline ] ]
+          RoleArn: !GetAtt CloudWatchEventRole.Arn
+          Id: codepipeline-AppPipeline
 
   AppCodeBuild:
     Type: AWS::CodeBuild::Project
@@ -127,20 +156,18 @@ Resources:
         Actions:
         - InputArtifacts: []
           Name: Source
+          Namespace: code
           ActionTypeId:
             Category: Source
-            Owner: ThirdParty
+            Owner: AWS
             Version: '1'
-            Provider: GitHub
+            Provider: CodeCommit
           OutputArtifacts:
           - Name: MyApp
           Configuration:
-            Owner: !Ref GitHubOwner
-            Repo: !Ref GitHubRepository
-            PollForSourceChanges: !If [ WebhookEnabled, false, true ]
-            Branch: !Ref Branch
-            # Reads the token from Secrets Manager
-            OAuthToken: '{{resolve:secretsmanager:dev/github/token:SecretString:GitHubAccessToken}}'
+            RepositoryName: !Ref RepositoryName
+            BranchName: !Ref Branch
+            PollForSourceChanges: false
           RunOrder: 1
       - Name: Build
         Actions:
@@ -175,22 +202,6 @@ Resources:
       ArtifactStore:
         Type: S3
         Location: !Ref ArtifactStoreS3Bucket
-
-  Webhook:
-    Type: AWS::CodePipeline::Webhook
-    Condition: WebhookEnabled
-    Properties:
-      Name: CodePipelineGitHubWebhook
-      AuthenticationConfiguration:
-        SecretToken: !Ref GitHubWebhookSecret
-      Filters:
-        - JsonPath: "$.ref"
-          MatchEquals: refs/heads/{Branch}
-      Authentication: GITHUB_HMAC
-      TargetPipeline: !Ref AppPipeline
-      TargetAction: Source
-      TargetPipelineVersion: !GetAtt AppPipeline.Version
-      RegisterWithThirdParty: true
 
   ArtifactStoreS3Bucket:
     Type: AWS::S3::Bucket
