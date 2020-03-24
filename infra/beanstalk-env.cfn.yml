@@ -20,11 +20,11 @@ Parameters:
 
   BeanstalkPlatform:
     Type: String
-    Description: Beanstalk Platform - docker or java
+    Description: Beanstalk Platform - java or docker
     Default: java
     AllowedValues:
-      - docker
       - java
+      - docker
 
   CNAMEPrefix:
     Description: CNAME prefix for Beanstalk URL (optional)
@@ -55,8 +55,8 @@ Parameters:
 
   SSLCertificateArn:
     Description: Optional SSL/TLS certificate ARN, must be in the same region as the environment
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: /global/certificates/arn-eu-west-1
+    Type: String
+#    Default: /global/certificates/arn-eu-west-1
     MinLength: 0
     MaxLength: 2048
 
@@ -267,22 +267,19 @@ Resources:
 
       - Namespace: !Sub
           - "aws:elbv2:listener:${ListenPort}"
-          - ListenPort:
-              "Fn::ImportValue": !Sub ${NetworkStackName}-ELBIngressPort
+          - ListenPort: !If [ TlsEnabled, 443, 80 ]
         OptionName: Protocol
         Value: !If [ TlsEnabled, HTTPS, HTTP ]
 
       - Namespace: !Sub
           - "aws:elbv2:listener:${ListenPort}"
-          - ListenPort:
-              "Fn::ImportValue": !Sub ${NetworkStackName}-ELBIngressPort
+          - ListenPort: !If [ TlsEnabled, 443, 80 ]
         OptionName: Rules
         Value: default
 
       - Namespace: !Sub
           - "aws:elbv2:listener:${ListenPort}"
-          - ListenPort:
-              "Fn::ImportValue": !Sub ${NetworkStackName}-ELBIngressPort
+          - ListenPort: !If [ TlsEnabled, 443, 80 ]
         OptionName: SSLCertificateArns
         Value: !Ref SSLCertificateArn
 

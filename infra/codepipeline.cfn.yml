@@ -66,11 +66,11 @@ Parameters:
 
   BeanstalkPlatform:
     Type: String
-    Description: Beanstalk Platform - docker or java
-    Default: docker
+    Description: Beanstalk Platform - java or docker
+    Default: java
     AllowedValues:
-      - docker
       - java
+      - docker
 
 Metadata:
   AWS::CloudFormation::Interface:
