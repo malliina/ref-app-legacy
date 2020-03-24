@@ -114,14 +114,14 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       Path: /
-      AssumeRolePolicyDocument: |
-        {
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": { "Service": [ "elasticbeanstalk.amazonaws.com" ]},
-            "Action": [ "sts:AssumeRole" ]
-          }]
-        }
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - elasticbeanstalk.amazonaws.com
+            Action:
+              - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth
         - arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService
@@ -183,7 +183,7 @@ Resources:
           - ','
           - - 'tcp, 22, 22'
             - !ImportValue
-                "Fn::Sub": "${NetworkStackName}-BastionGroupID"
+                "Fn::Sub": ${NetworkStackName}-BastionGroupID
 
       - Namespace: aws:autoscaling:launchconfiguration
         OptionName: InstanceType
@@ -336,20 +336,8 @@ Resources:
                 - ec2.amazonaws.com
             Action:
               - sts:AssumeRole
-
-  AppPolicies:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: App
-      Roles:
-      - !Ref AppRole
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          -
-            Effect: Allow
-            Action: "*"
-            Resource: "*"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier
 
   AppInstanceProfile:
     Type: AWS::IAM::InstanceProfile
