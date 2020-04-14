@@ -10,6 +10,10 @@ val Frontend = config("frontend")
 val Beanstalk = config("beanstalk")
 val testContainersScalaVersion = "0.35.0"
 
+ThisBuild / organization := "com.malliina"
+ThisBuild / version := "1.0.0"
+ThisBuild / scalaVersion := "2.13.1"
+
 val p = Project("ref-app", file("."))
   .enablePlugins(PlayScala, BuildInfoPlugin, DockerPlugin)
   .settings(
@@ -58,5 +62,20 @@ val p = Project("ref-app", file("."))
     stage in Beanstalk := (stage in Beanstalk).dependsOn(stage in Universal).value,
     mappings in Universal ++= contentOf("src/universal")
   )
+
+val cdkModules = Seq("s3", "elasticbeanstalk")
+
+val infra = project
+  .in(file("infra") / "cdk")
+  .settings(
+    libraryDependencies ++= cdkModules.map { module =>
+      "software.amazon.awscdk" % module % "1.32.2"
+    } ++ Seq(
+      "org.scalameta" %% "munit" % "0.7.2" % Test
+    ),
+    testFrameworks += new TestFramework("munit.Framework")
+  )
+
+val refapp = project.in(file("solution")).aggregate(p, infra)
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
