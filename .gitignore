@@ -15,6 +15,7 @@ dist
 out
 hydra.sbt
 .metals
+cdk.out
 
 # Project exclude paths
 /frontend/node_modules/

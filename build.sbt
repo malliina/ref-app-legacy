@@ -9,6 +9,7 @@ val defaultPort = 9000
 val Frontend = config("frontend")
 val Beanstalk = config("beanstalk")
 val testContainersScalaVersion = "0.35.0"
+val deploy = taskKey[Unit]("Runs cdk deploy")
 
 ThisBuild / organization := "com.malliina"
 ThisBuild / version := "1.0.0"
@@ -50,12 +51,22 @@ val p = Project("ref-app", file("."))
       .orElse(sys.env.get("CODEBUILD_SOURCE_VERSION").map(_.take(7)))
       .getOrElse("latest"),
     dockerHttpPort := sys.env.get("HTTP_PORT").map(_.toInt).getOrElse(defaultPort),
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, "gitHash" -> gitHash.value),
+    buildInfoKeys := Seq[BuildInfoKey](
+      name,
+      version,
+      scalaVersion,
+      sbtVersion,
+      "gitHash" -> gitHash.value
+    ),
     buildInfoPackage := "com.malliina.refapp.build",
     pipelineStages := Seq(digest, gzip),
     baseDirectory in Frontend := baseDirectory.value / "frontend",
     unmanagedResourceDirectories in Assets += (baseDirectory in Frontend).value / "dist",
-    PlayKeys.playRunHooks += new NPMRunHook((baseDirectory in Frontend).value, target.value, streams.value.log),
+    PlayKeys.playRunHooks += new NPMRunHook(
+      (baseDirectory in Frontend).value,
+      target.value,
+      streams.value.log
+    ),
     stage in Frontend := NPMRunHook.stage((baseDirectory in Frontend).value, streams.value.log),
     stage in Docker := (stage in Docker).dependsOn(stage in Frontend).value,
     stage in Universal := (stage in Universal).dependsOn(stage in Frontend).value,
@@ -63,7 +74,7 @@ val p = Project("ref-app", file("."))
     mappings in Universal ++= contentOf("src/universal")
   )
 
-val cdkModules = Seq("s3", "elasticbeanstalk")
+val cdkModules = Seq("s3", "elasticbeanstalk", "codebuild", "codecommit", "codepipeline-actions")
 
 val infra = project
   .in(file("infra") / "cdk")
@@ -71,9 +82,12 @@ val infra = project
     libraryDependencies ++= cdkModules.map { module =>
       "software.amazon.awscdk" % module % "1.32.2"
     } ++ Seq(
+      "com.typesafe.play" %% "play-json" % "2.8.1",
       "org.scalameta" %% "munit" % "0.7.2" % Test
     ),
-    testFrameworks += new TestFramework("munit.Framework")
+    testFrameworks += new TestFramework("munit.Framework"),
+    deploy := ProcessIO
+      .runProcessSync("cdk deploy", (baseDirectory in ThisBuild).value, streams.value.log)
   )
 
 val refapp = project.in(file("solution")).aggregate(p, infra)
