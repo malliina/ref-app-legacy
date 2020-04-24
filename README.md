@@ -35,7 +35,7 @@ A [Play run hook](https://www.playframework.com/documentation/2.8.x/sbtCookbook#
 in [NPMRunHook.scala](project/NPMRunHook.scala) launches `npm` when `sbt run` is started, therefore:
 
 - both the backend and frontend are built at the same time
-- any built frontend assets are made available to and served by the Scala backend
+- the Scala backend serves any built frontend assets
 
 ### With Docker
 
@@ -58,10 +58,9 @@ Use the CloudFormation templates in [infra](infra) to deploy:
 1. Deploy a CI pipeline with [codepipeline.cfn.yml](infra/codepipeline.cfn.yml)
 
 Both [Single Container Docker](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/single-container-docker.html) and 
-[Java SE](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/java-se-platform.html) platforms are supported. With
-Java SE, deployments from source code to production of a medium sized app can be done in less than five minutes.
+[Java SE](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/java-se-platform.html) platforms are supported.
 
-The templates will provision infrastructure and launch the app. Pushing to master will trigger a redeploy.
+The templates will provision infrastructure and launch the app. Pushing to master will trigger a redeployment.
 
 ## Formatting
 

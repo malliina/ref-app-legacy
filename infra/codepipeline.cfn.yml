@@ -111,7 +111,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: !Ref CodeBuildEnvironment
-        Image: 'aws/codebuild/standard:2.0'
+        Image: 'aws/codebuild/standard:4.0'
       Source:
         BuildSpec: !If [ IsDocker, buildspec.yml, buildspec-java.yml ]
         Type: CODEPIPELINE

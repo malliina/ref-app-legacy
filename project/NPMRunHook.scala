@@ -4,28 +4,15 @@ import sbt._
 
 import scala.sys.process.Process
 
-object NPMRunHook {
-  val isWindows = sys.props("os.name").toLowerCase().contains("win")
-  val cmdPrefix = if (isWindows) "cmd /c " else ""
+object NPMRunHook extends ProcessIO {
   val buildCommand = "npm run build"
 
   def stage(base: File, log: Logger): File = {
-    Seq("npm install", "npm run build").foreach { cmd =>
+    Seq("npm install", buildCommand).foreach { cmd =>
       runProcessSync(cmd, base, log)
     }
     base
   }
-
-  def runProcessSync(command: String, base: File, log: Logger): Unit = {
-    val actualCommand = canonical(command)
-    log.info(s"Running '$actualCommand'...")
-    val rc = Process(actualCommand, base).run(log).exitValue()
-    if (rc != 0) {
-      throw new Exception(s"$actualCommand failed with $rc")
-    }
-  }
-
-  def canonical(command: String) = s"$cmdPrefix$command"
 }
 
 /** Try https://stackoverflow.com/questions/269494/how-can-i-cause-a-child-process-to-exit-when-the-parent-does
