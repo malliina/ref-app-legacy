@@ -8,12 +8,9 @@ import software.amazon.awscdk.services.codepipeline.actions.{CodeBuildAction, Co
 import software.amazon.awscdk.services.codepipeline.{Artifact, IAction, Pipeline, StageProps}
 import software.amazon.awscdk.services.elasticbeanstalk.CfnConfigurationTemplate.ConfigurationOptionSettingProperty
 import software.amazon.awscdk.services.elasticbeanstalk.{CfnApplication, CfnConfigurationTemplate, CfnEnvironment}
-import software.amazon.awscdk.services.events.targets.CodePipeline
-import software.amazon.awscdk.services.events.{EventPattern, IRuleTarget, Rule}
 import software.amazon.awscdk.services.iam._
 import software.amazon.awscdk.services.s3.Bucket
 
-import scala.jdk.CollectionConverters.{MapHasAsJava, SeqHasAsJava}
 import scala.{App => _}
 
 object StackOne {
@@ -29,7 +26,8 @@ object StackOne {
 }
 
 class StackOne(scope: Construct, id: String, props: Option[StackProps])
-  extends Stack(scope, id, props.orNull) {
+  extends Stack(scope, id, props.orNull)
+  with CDKBuilders {
 
   val dockerStackName = "64bit Amazon Linux 2018.03 v2.14.1 running Docker 18.09.9-ce"
   val javaStackName = "64bit Amazon Linux 2018.03 v2.10.4 running Java 8"
@@ -163,56 +161,6 @@ class StackOne(scope: Construct, id: String, props: Option[StackProps])
       )
     )
     .build()
-  val codepipelineTarget = CodePipeline.Builder
-    .create(pipeline)
-    .eventRole(
-      Role.Builder
-        .create(this, "MyCdkCodeEventRole")
-        .path("/")
-        .assumedBy(principal("events.amazonaws.com"))
-        .inlinePolicies(
-          map(
-            "cwe-pipeline-execution" -> PolicyDocument.Builder
-              .create()
-              .statements(
-                list(
-                  PolicyStatement.Builder
-                    .create()
-                    .effect(Effect.ALLOW)
-                    .actions(list("codepipeline:StartPipelineExecution"))
-                    .resources(list(pipeline.getPipelineArn))
-                    .build()
-                )
-              )
-              .build()
-          )
-        )
-        .build()
-    )
-    .build()
-  Rule.Builder
-    .create(this, "MyCdkCodeRule")
-    .eventPattern(
-      EventPattern
-        .builder()
-        .source(list("aws.codecommit"))
-        .detailType(list("CodeCommit Repository State Change"))
-        .resources(list(repo.getRepositoryArn))
-        .detail(
-          map(
-            "event" -> list("referenceCreated"),
-            "referenceType" -> list("tag"),
-            "referenceName" -> map("prefix" -> list("release-"))
-          )
-        )
-        .build()
-    )
-    .targets(list[IRuleTarget](codepipelineTarget))
-    .build()
-
-  def principal(service: String) = ServicePrincipal.Builder.create(service).build()
-  def list[T](xs: T*) = xs.asJava
-  def map[T](kvs: (String, T)*) = Map(kvs: _*).asJava
 }
 
 object MyCdk {
