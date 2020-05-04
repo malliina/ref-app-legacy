@@ -17,6 +17,8 @@ case class EBDeployActionData(
   environmentName: String
 )
 
+/** Home-made Elastic Beanstalk deploy action because https://github.com/aws/aws-cdk/issues/2516.
+  */
 class BeanstalkDeployActionProperties(actionName: String, input: Artifact)
   extends ActionProperties {
   override def getActionName: String = actionName
