@@ -11,14 +11,24 @@ case class TestAppConf(database: DatabaseConf) extends AppConf
 
 object TestConf {
   def apply(container: MySQLContainer): DatabaseConf =
-    DatabaseConf(true, s"${container.jdbcUrl}?useSSL=false", container.username, container.password)
+    DatabaseConf(
+      true,
+      s"${container.jdbcUrl}?useSSL=false",
+      "localhost",
+      container.databaseName,
+      container.username,
+      container.password
+    )
 }
 
 /** Launches the server at some port for the duration of the test.
   *
   * Uses a Docker MySQL container as a test database.
   */
-trait RefServerSuite extends FunSuite with OneServerPerSuite2[AppComponents] with ForAllTestContainer {
+trait RefServerSuite
+  extends FunSuite
+  with OneServerPerSuite2[AppComponents]
+  with ForAllTestContainer {
   self: TestSuite =>
   override val container = MySQLContainer()
 
@@ -31,7 +41,8 @@ trait RefServerSuite extends FunSuite with OneServerPerSuite2[AppComponents] wit
 
 abstract class BrowserSuite extends FunSuite with RefServerSuite with WebBrowser
 
-trait TestComponents extends FunSuite with WithComponents[AppComponents] with ForAllTestContainer { self: Suite =>
+trait TestComponents extends FunSuite with WithComponents[AppComponents] with ForAllTestContainer {
+  self: Suite =>
   override val container = MySQLContainer()
 
   override def createComponents(context: ApplicationLoader.Context): AppComponents = {

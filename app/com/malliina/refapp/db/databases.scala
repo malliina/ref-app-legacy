@@ -4,7 +4,15 @@ import com.malliina.refapp.db.DatabaseConf.MySQLDriver
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import play.api.{Configuration, Logger}
 
-case class DatabaseConf(enabled: Boolean, url: String, user: String, pass: String, driver: String = MySQLDriver)
+case class DatabaseConf(
+  enabled: Boolean,
+  url: String,
+  host: String,
+  name: String,
+  user: String,
+  pass: String,
+  driver: String = MySQLDriver
+)
 
 object DatabaseConf {
   val MySQLDriver = "com.mysql.jdbc.Driver"
@@ -12,7 +20,14 @@ object DatabaseConf {
   def fromConf(conf: Configuration): DatabaseConf = {
     val databaseConfig = conf.get[Configuration]("refapp.db")
     def get(key: String) = databaseConfig.get[String](key)
-    DatabaseConf(databaseConfig.get[Boolean]("enabled"), get("url"), get("user"), get("pass"))
+    DatabaseConf(
+      databaseConfig.get[Boolean]("enabled"),
+      get("url"),
+      get("host"),
+      get("name"),
+      get("user"),
+      get("pass")
+    )
   }
 }
 

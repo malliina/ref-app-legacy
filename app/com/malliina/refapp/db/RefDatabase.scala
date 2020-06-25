@@ -2,18 +2,16 @@ package com.malliina.refapp.db
 
 import java.io.Closeable
 
-import com.github.jasync.sql.db.{ConnectionPoolConfiguration, ConnectionPoolConfigurationBuilder}
+import com.github.jasync.sql.db.ConnectionPoolConfiguration
 import com.github.jasync.sql.db.mysql.MySQLConnectionBuilder
-import com.github.jasync.sql.db.pool.ConnectionPool
-import com.zaxxer.hikari.HikariDataSource
-import io.getquill.{MysqlJAsyncContext, MysqlJdbcContext, SnakeCase}
+import io.getquill.{MysqlJAsyncContext, SnakeCase}
 import org.flywaydb.core.Flyway
 
 import scala.concurrent.{ExecutionContext, Future}
 
 object RefDatabase {
   def apply(conf: DatabaseConf, ec: ExecutionContext): RefDatabase = {
-    val config = new ConnectionPoolConfiguration("")
+    val config = new ConnectionPoolConfiguration(conf.host, 3306, conf.name, conf.user, conf.pass)
     val pool = MySQLConnectionBuilder.createConnectionPool(config)
     val ctx = new MysqlJAsyncContext(SnakeCase, pool)
     new RefDatabase(ctx)(ec)
