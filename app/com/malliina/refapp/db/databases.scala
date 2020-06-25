@@ -7,8 +7,6 @@ import play.api.{Configuration, Logger}
 case class DatabaseConf(
   enabled: Boolean,
   url: String,
-  host: String,
-  name: String,
   user: String,
   pass: String,
   driver: String = MySQLDriver
@@ -23,8 +21,6 @@ object DatabaseConf {
     DatabaseConf(
       databaseConfig.get[Boolean]("enabled"),
       get("url"),
-      get("host"),
-      get("name"),
       get("user"),
       get("pass")
     )

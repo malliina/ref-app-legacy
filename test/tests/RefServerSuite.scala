@@ -14,8 +14,6 @@ object TestConf {
     DatabaseConf(
       true,
       s"${container.jdbcUrl}?useSSL=false",
-      "localhost",
-      container.databaseName,
       container.username,
       container.password
     )
@@ -30,7 +28,7 @@ trait RefServerSuite
   with OneServerPerSuite2[AppComponents]
   with ForAllTestContainer {
   self: TestSuite =>
-  override val container = MySQLContainer()
+  override val container: MySQLContainer = MySQLContainer()
 
   override def createComponents(context: ApplicationLoader.Context): AppComponents = {
     container.start()

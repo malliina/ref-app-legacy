@@ -10,8 +10,14 @@ import org.flywaydb.core.Flyway
 import scala.concurrent.{ExecutionContext, Future}
 
 object RefDatabase {
+  private val regex = "jdbc:mysql://([0-9a-zA-Z-]+):?([0-9]*)/([0-9a-zA-Z-]+)".r
+
   def apply(conf: DatabaseConf, ec: ExecutionContext): RefDatabase = {
-    val config = new ConnectionPoolConfiguration(conf.host, 3306, conf.name, conf.user, conf.pass)
+    val m = regex.findFirstMatchIn(conf.url).get
+    val host = m.group(1)
+    val port = m.group(2).toIntOption.getOrElse(3306)
+    val name = m.group(3)
+    val config = new ConnectionPoolConfiguration(host, port, name, conf.user, conf.pass)
     val pool = MySQLConnectionBuilder.createConnectionPool(config)
     val ctx = new MysqlJAsyncContext(SnakeCase, pool)
     new RefDatabase(ctx)(ec)
