@@ -42,15 +42,16 @@ object AppComponents {
 }
 
 class AppComponents(context: Context, resolveConf: Configuration => AppConf)
-    extends BuiltInComponentsFromContext(context)
-    with HttpFiltersComponents
-    with AssetsComponents {
-  override val configuration: Configuration = AppConf.localConf.withFallback(context.initialConfiguration)
+  extends BuiltInComponentsFromContext(context)
+  with HttpFiltersComponents
+  with AssetsComponents {
+  override val configuration: Configuration =
+    AppConf.localConf.withFallback(context.initialConfiguration)
   val conf = resolveConf(configuration)
-  val db = RefDatabase.opt(conf.database)
+  val db = RefDatabase.opt(conf.database, executionContext)
   override val httpFilters: Seq[EssentialFilter] =
     Seq(AccessLogFilter(executionContext), new GzipFilter(), securityHeadersFilter)
   val as = new AssetsBuilder(httpErrorHandler, assetsMetadata)
-  val home = new Home(as, controllerComponents, db.map(_.ds))
+  val home = new Home(as, controllerComponents)
   override val router: Router = new Routes(httpErrorHandler, home)
 }

@@ -1,4 +1,5 @@
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper.contentOf
+import com.typesafe.sbt.packager.docker.DockerVersion
 
 import scala.sys.process.Process
 import scala.util.Try
@@ -27,7 +28,8 @@ val p = Project("ref-app", file("."))
     ),
     libraryDependencies ++= Seq(
       "mysql" % "mysql-connector-java" % "5.1.48",
-      "io.getquill" %% "quill-jdbc" % "3.5.0",
+      "io.getquill" %% "quill-jdbc" % "3.5.2",
+      "io.getquill" %% "quill-jasync-mysql" % "3.5.2",
       "org.flywaydb" % "flyway-core" % "5.2.4",
       "redis.clients" % "jedis" % "3.2.0",
       "com.lihaoyi" %% "scalatags" % "0.8.4",
@@ -37,6 +39,7 @@ val p = Project("ref-app", file("."))
       "com.dimafeng" %% "testcontainers-scala-scalatest" % testContainersScalaVersion % Test,
       "com.dimafeng" %% "testcontainers-scala-mysql" % testContainersScalaVersion % Test
     ),
+    dockerVersion := Option(DockerVersion(19, 3, 5, None)),
     dockerBaseImage := "openjdk:11",
     daemonUser in Docker := "daemon",
     dockerRepository := Option("malliina"),

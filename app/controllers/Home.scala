@@ -27,8 +27,7 @@ object Home {
   def feedback(input: String) = s"You submitted: '$input'."
 }
 
-class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: Option[HikariDataSource])
-    extends AbstractController(comps) {
+class Home(assets: AssetsBuilder, comps: ControllerComponents) extends AbstractController(comps) {
   val redis = JedisRedis().toOption
   val pages = Pages
 
@@ -38,8 +37,9 @@ class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: Option[Hikari
     Ok(pages.formPage(UserFeedback(req.flash))).withHeaders(CACHE_CONTROL -> NoCache)
   }
 
-  def submitForm = Action(parse.form(DemoForm.form, onErrors = (_: Form[String]) => badForm)) { req =>
-    Redirect(pages.reverse.form()).flashing(UserFeedback(feedback(req.body)).flash)
+  def submitForm = Action(parse.form(DemoForm.form, onErrors = (_: Form[String]) => badForm)) {
+    req =>
+      Redirect(pages.reverse.form()).flashing(UserFeedback(feedback(req.body)).flash)
   }
 
   private def badForm =
@@ -49,9 +49,7 @@ class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: Option[Hikari
     val redisMessage = redis.flatMap { c =>
       c.get("test").map(_ => s"Connected to Redis at '${c.host}'.").toOption
     }
-    Json.obj("db" -> ds.map { ds =>
-      ds.getJdbcUrl
-    }.toSeq, "redis" -> redisMessage.toSeq)
+    Json.obj("redis" -> redisMessage.toSeq)
   }
 
   def health = Action {
@@ -59,7 +57,8 @@ class Home(assets: AssetsBuilder, comps: ControllerComponents, ds: Option[Hikari
       .withHeaders(CACHE_CONTROL -> NoCache)
   }
 
-  def okAction[W: Writeable](w: W) = Action(Ok(w).withHeaders(CACHE_CONTROL -> cacheControl(60.seconds)))
+  def okAction[W: Writeable](w: W) =
+    Action(Ok(w).withHeaders(CACHE_CONTROL -> cacheControl(60.seconds)))
 
   def static(file: String) = assets.at("/public", file, aggressiveCaching = true)
   def versioned(path: String, file: Asset) = assets.versioned(path, file)
