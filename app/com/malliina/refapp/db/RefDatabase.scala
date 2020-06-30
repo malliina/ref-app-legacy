@@ -10,7 +10,7 @@ import org.flywaydb.core.Flyway
 import scala.concurrent.{ExecutionContext, Future}
 
 object RefDatabase {
-  private val regex = "jdbc:mysql://([0-9a-zA-Z-]+):?([0-9]*)/([0-9a-zA-Z-]+)".r
+  private val regex = "jdbc:mysql://([\\.0-9a-zA-Z-]+):?([0-9]*)/([0-9a-zA-Z-]+)".r
 
   def apply(conf: DatabaseConf, ec: ExecutionContext): RefDatabase = {
     val m = regex.findFirstMatchIn(conf.url).get
