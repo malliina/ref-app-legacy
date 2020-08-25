@@ -22,7 +22,7 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
   val appName = app.getApplicationName
   val namePrefix = "MyCdk"
   val dockerSolutionStackName = "64bit Amazon Linux 2 v3.1.0 running Docker"
-  val javaSolutionStackName = "64bit Amazon Linux 2 v3.0.5 running Corretto 11"
+  val javaSolutionStackName = "64bit Amazon Linux 2 v3.1.0 running Corretto 11"
   val solutionStack = javaSolutionStackName
 
   val branch = "master"
@@ -105,8 +105,21 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
     .build()
   val sourceOut = new Artifact()
   val buildOut = new Artifact()
+  val pipelineRole = Role.Builder
+    .create(stack, makeId("PipelineRole"))
+    .assumedBy(principal("codepipeline.amazonaws.com"))
+    .managedPolicies(
+      list(
+        ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess"),
+        ManagedPolicy.fromAwsManagedPolicyName("AWSCodeCommitFullAccess"),
+        ManagedPolicy.fromAwsManagedPolicyName("AWSCodePipelineFullAccess"),
+        ManagedPolicy.fromAwsManagedPolicyName("AWSElasticBeanstalkFullAccess")
+      )
+    )
+    .build()
   val pipeline: Pipeline = Pipeline.Builder
     .create(stack, makeId("Pipeline"))
+    .role(pipelineRole)
     .stages(
       list[StageProps](
         StageProps
