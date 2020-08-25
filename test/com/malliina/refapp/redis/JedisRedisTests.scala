@@ -1,8 +1,8 @@
 package com.malliina.refapp.redis
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuiteLike
 
-class JedisRedisTests extends FunSuite {
+class JedisRedisTests extends AnyFunSuiteLike {
   test("get from nonexistent Redis fails") {
     val client = JedisRedis("nonexistent-host")
     assert(client.get("key").isFailure)

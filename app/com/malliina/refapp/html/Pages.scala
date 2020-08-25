@@ -22,12 +22,23 @@ object Pages {
 
   def formPage(feedback: Option[UserFeedback]) = basePage(
     div(`class` := "form-container")(
-      form(`class` := "form", action := reverse.submitForm, method := "POST")(
+      form(`class` := "form", action := reverse.submitForm(), method := "POST")(
         h2(`class` := "form-title")("Provide value!"),
-        input(`class` := "form-input", `type` := "text", name := DemoForm.Name, placeholder := "Provide text..."),
+        input(
+          `class` := "form-input",
+          `type` := "text",
+          name := DemoForm.Name,
+          placeholder := "Provide text..."
+        ),
         button(`class` := "btn form-submit", `type` := "submit")("Save"),
         feedback.map { fb =>
-          p(`class` := names(FeedbackClass, if (fb.isSuccess) "form-feedback-success" else "form-feedback-error"))(
+          p(
+            `class` := names(
+              FeedbackClass,
+              if (fb.isSuccess) "form-feedback-success"
+              else "form-feedback-error"
+            )
+          )(
             fb.message
           )
         }

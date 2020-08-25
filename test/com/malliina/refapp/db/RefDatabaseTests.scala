@@ -1,12 +1,13 @@
 package com.malliina.refapp.db
 
 import com.dimafeng.testcontainers.{ForAllTestContainer, MySQLContainer}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuiteLike
 import tests.TestConf
-import concurrent.duration.DurationInt
+
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-class RefDatabaseTests extends FunSuite with ForAllTestContainer {
+class RefDatabaseTests extends AnyFunSuiteLike with ForAllTestContainer {
   override val container = MySQLContainer()
   implicit val ec = ExecutionContext.Implicits.global
   lazy val refDatabase = RefDatabase.withMigrations(TestConf(container), ec)

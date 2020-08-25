@@ -3,7 +3,8 @@ package tests
 import com.dimafeng.testcontainers.{ForAllTestContainer, MySQLContainer}
 import com.malliina.refapp.db.DatabaseConf
 import com.malliina.refapp.{AppComponents, AppConf, WithComponents}
-import org.scalatest.{FunSuite, Suite, TestSuite}
+import org.scalatest.funsuite.AnyFunSuiteLike
+import org.scalatest.{Suite, TestSuite}
 import org.scalatestplus.selenium.WebBrowser
 import play.api.ApplicationLoader
 
@@ -24,7 +25,7 @@ object TestConf {
   * Uses a Docker MySQL container as a test database.
   */
 trait RefServerSuite
-  extends FunSuite
+  extends AnyFunSuiteLike
   with OneServerPerSuite2[AppComponents]
   with ForAllTestContainer {
   self: TestSuite =>
@@ -37,9 +38,12 @@ trait RefServerSuite
   }
 }
 
-abstract class BrowserSuite extends FunSuite with RefServerSuite with WebBrowser
+abstract class BrowserSuite extends AnyFunSuiteLike with RefServerSuite with WebBrowser
 
-trait TestComponents extends FunSuite with WithComponents[AppComponents] with ForAllTestContainer {
+trait TestComponents
+  extends AnyFunSuiteLike
+  with WithComponents[AppComponents]
+  with ForAllTestContainer {
   self: Suite =>
   override val container = MySQLContainer()
 
@@ -51,4 +55,4 @@ trait TestComponents extends FunSuite with WithComponents[AppComponents] with Fo
 
 /** Launches the app for the duration of the test.
   */
-trait RefAppSuite extends FunSuite with OneAppPerSuite2[AppComponents] with TestComponents
+trait RefAppSuite extends AnyFunSuiteLike with OneAppPerSuite2[AppComponents] with TestComponents

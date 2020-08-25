@@ -9,32 +9,33 @@ val dockerHttpPort = settingKey[Int]("HTTP listen port")
 val defaultPort = 9000
 val Frontend = config("frontend")
 val Beanstalk = config("beanstalk")
-val testContainersScalaVersion = "0.35.0"
+val testContainersScalaVersion = "0.38.1"
 val deploy = taskKey[Unit]("Runs cdk deploy")
 
-ThisBuild / organization := "com.malliina"
-ThisBuild / version := "1.0.0"
-ThisBuild / scalaVersion := "2.13.1"
+inThisBuild(
+  Seq(
+    organization := "com.malliina",
+    version := "1.0.0",
+    scalaVersion := "2.13.3"
+  )
+)
 
 val p = Project("ref-app", file("."))
   .enablePlugins(PlayScala, BuildInfoPlugin, DockerPlugin)
   .settings(
-    organization := "com.malliina",
-    version := "1.0.0",
-    scalaVersion := "2.13.1",
     scalacOptions ++= Seq(
       "-encoding",
       "UTF-8"
     ),
     libraryDependencies ++= Seq(
-      "mysql" % "mysql-connector-java" % "5.1.48",
+      "mysql" % "mysql-connector-java" % "5.1.49",
       "io.getquill" %% "quill-jdbc" % "3.5.2",
       "io.getquill" %% "quill-jasync-mysql" % "3.5.2",
-      "org.flywaydb" % "flyway-core" % "5.2.4",
-      "redis.clients" % "jedis" % "3.2.0",
-      "com.lihaoyi" %% "scalatags" % "0.8.4",
+      "org.flywaydb" % "flyway-core" % "6.5.5",
+      "redis.clients" % "jedis" % "3.3.0",
+      "com.lihaoyi" %% "scalatags" % "0.9.1",
       specs2 % Test,
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test,
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
       "org.seleniumhq.selenium" % "selenium-java" % "3.141.59" % Test,
       "com.dimafeng" %% "testcontainers-scala-scalatest" % testContainersScalaVersion % Test,
       "com.dimafeng" %% "testcontainers-scala-mysql" % testContainersScalaVersion % Test
@@ -83,10 +84,10 @@ val infra = project
   .in(file("infra") / "cdk")
   .settings(
     libraryDependencies ++= cdkModules.map { module =>
-      "software.amazon.awscdk" % module % "1.32.2"
+      "software.amazon.awscdk" % module % "1.60.0"
     } ++ Seq(
-      "com.typesafe.play" %% "play-json" % "2.8.1",
-      "org.scalameta" %% "munit" % "0.7.2" % Test
+      "com.typesafe.play" %% "play-json" % "2.9.0",
+      "org.scalameta" %% "munit" % "0.7.11" % Test
     ),
     testFrameworks += new TestFramework("munit.Framework"),
     deploy := ProcessIO
