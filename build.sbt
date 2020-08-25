@@ -45,7 +45,6 @@ val p = Project("ref-app", file("."))
     daemonUser in Docker := "daemon",
     dockerRepository := Option("malliina"),
     dockerExposedPorts := Seq(dockerHttpPort.value),
-    javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     javaOptions in Universal ++= Seq(
       "-J-Xmx256m",
       s"-Dhttp.port=${dockerHttpPort.value}"

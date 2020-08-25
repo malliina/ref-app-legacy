@@ -3,25 +3,23 @@ package com.malliina.cdk
 import software.amazon.awscdk.core.{Construct, Stack, StackProps, App => AWSApp}
 import software.amazon.awscdk.services.elasticbeanstalk.CfnApplication
 
-object BeanstalkApp {
-  def apply(scope: Construct, id: String) = new BeanstalkApp(scope, id, None)
+object AppStack {
+  def apply(scope: Construct, id: String, prefix: String) = new AppStack(scope, id, None, prefix)
 }
 
-class BeanstalkApp(scope: Construct, id: String, props: Option[StackProps])
-  extends Stack(scope, id, props.orNull)
-  with CDKBuilders {
-  val beanstalkApp = CfnApplication.Builder
-    .create(this, "MyCdkBeanstalk")
-    .applicationName("cdk-app")
-    .description("Built with CDK in Helsinki")
-    .build()
+class AppStack(scope: Construct, id: String, props: Option[StackProps], val prefix: String)
+  extends Stack(scope, id, props.orNull) {
+  val pipeline = BeanstalkPipeline(this)
 }
 
 object MyCdk {
   def main(args: Array[String]): Unit = {
     val app = new AWSApp()
-    val beanstalkApp = BeanstalkApp(app, "hello-cdk")
-    val qa = BeanstalkPipeline("ref-app-qa", beanstalkApp.beanstalkApp)
+
+    val qa = AppStack(app, "qa-refapp", "qa")
+
+    val prod = AppStack(app, "prod-refapp", "prod")
+
     val assembly = app.synth()
   }
 }

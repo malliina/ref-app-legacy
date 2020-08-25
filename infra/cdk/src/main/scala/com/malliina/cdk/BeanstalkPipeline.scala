@@ -1,6 +1,6 @@
 package com.malliina.cdk
 
-import software.amazon.awscdk.services.codebuild.{BuildEnvironment, BuildSpec, ComputeType, LinuxBuildImage, PipelineProject}
+import software.amazon.awscdk.services.codebuild._
 import software.amazon.awscdk.services.codecommit.Repository
 import software.amazon.awscdk.services.codepipeline.actions.{CodeBuildAction, CodeCommitSourceAction}
 import software.amazon.awscdk.services.codepipeline.{Artifact, IAction, Pipeline, StageProps}
@@ -8,15 +8,21 @@ import software.amazon.awscdk.services.elasticbeanstalk.{CfnApplication, CfnConf
 import software.amazon.awscdk.services.iam.{CfnInstanceProfile, ManagedPolicy, Role}
 
 object BeanstalkPipeline {
-  def apply(envName: String, app: CfnApplication): BeanstalkPipeline =
-    new BeanstalkPipeline(envName, app)
+  def apply(stack: AppStack): BeanstalkPipeline =
+    new BeanstalkPipeline(stack)
 }
 
-class BeanstalkPipeline(envName: String, app: CfnApplication) extends CDKBuilders {
+class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
+  val envName = s"${stack.prefix}-refapp"
+  val app = CfnApplication.Builder
+    .create(stack, "MyCdkBeanstalk")
+    .applicationName(envName)
+    .description("Built with CDK in Helsinki")
+    .build()
+  val appName = app.getApplicationName
   val namePrefix = "MyCdk"
-  val stack = app.getStack
-  val dockerSolutionStackName = "64bit Amazon Linux 2018.03 v2.14.1 running Docker 18.09.9-ce"
-  val javaSolutionStackName = "64bit Amazon Linux 2018.03 v2.10.4 running Java 8"
+  val dockerSolutionStackName = "64bit Amazon Linux 2 v3.1.0 running Docker"
+  val javaSolutionStackName = "64bit Amazon Linux 2 v3.0.5 running Corretto 11"
   val solutionStack = javaSolutionStackName
 
   val branch = "master"
@@ -49,7 +55,7 @@ class BeanstalkPipeline(envName: String, app: CfnApplication) extends CDKBuilder
     .build()
   val configurationTemplate = CfnConfigurationTemplate.Builder
     .create(stack, makeId("BeanstalkConfigurationTemplate"))
-    .applicationName(app.getApplicationName)
+    .applicationName(appName)
     .solutionStackName(solutionStack)
     .optionSettings(
       list[AnyRef](
@@ -70,7 +76,7 @@ class BeanstalkPipeline(envName: String, app: CfnApplication) extends CDKBuilder
     .build()
   val beanstalkEnv = CfnEnvironment.Builder
     .create(stack, makeId("Env"))
-    .applicationName(app.getApplicationName)
+    .applicationName(appName)
     .environmentName(envName)
     .templateName(configurationTemplate.getRef)
     .solutionStackName(solutionStack)
@@ -95,7 +101,7 @@ class BeanstalkPipeline(envName: String, app: CfnApplication) extends CDKBuilder
   val repo = Repository.Builder
     .create(stack, makeId("Code"))
     .repositoryName(makeId("Repo"))
-    .description(s"Repository for $envName environment of app ${app.getApplicationName}.")
+    .description(s"Repository for $envName environment of app $appName.")
     .build()
   val sourceOut = new Artifact()
   val buildOut = new Artifact()
@@ -142,7 +148,7 @@ class BeanstalkPipeline(envName: String, app: CfnApplication) extends CDKBuilder
                 EBDeployActionData(
                   "DeployAction",
                   buildOut,
-                  app.getApplicationName,
+                  appName,
                   beanstalkEnv.getEnvironmentName
                 )
               )
