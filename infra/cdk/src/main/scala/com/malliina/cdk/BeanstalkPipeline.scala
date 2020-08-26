@@ -27,7 +27,7 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
 
   val branch = "master"
 
-  def makeId(name: String) = s"$namePrefix-$envName-$name"
+  def makeId(name: String) = s"$envName-$name"
 
   // Environment
 
