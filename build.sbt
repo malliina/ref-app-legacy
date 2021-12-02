@@ -42,7 +42,7 @@ val app = Project("app", file("backend"))
     dockerRepository := Option("malliina"),
     dockerExposedPorts := Seq(dockerHttpPort.value),
     Universal / javaOptions ++= Seq(
-      "-J-Xmx512m",
+      "-J-Xmx256m",
       s"-Dhttp.port=${dockerHttpPort.value}"
     ),
     gitHash := Try(Process("git rev-parse --short HEAD").lineStream.head).toOption

@@ -19,4 +19,4 @@ artifacts:
   files:
     - Dockerfile
     - opt/**/*
-  base-directory: target/docker/stage
+  base-directory: backend/target/docker/stage

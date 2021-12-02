@@ -18,4 +18,4 @@ phases:
 artifacts:
   files:
     - '**/*'
-  base-directory: target/universal/stage
+  base-directory: backend/target/universal/stage

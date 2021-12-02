@@ -22,7 +22,7 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
   val appName = app.getApplicationName
   val namePrefix = "MyCdk"
   val dockerSolutionStackName = "64bit Amazon Linux 2 v3.1.0 running Docker"
-  val javaSolutionStackName = "64bit Amazon Linux 2 v3.1.0 running Corretto 11"
+  val javaSolutionStackName = "64bit Amazon Linux 2 v3.2.8 running Corretto 11"
   val solutionStack = javaSolutionStackName
 
   val branch = "master"
@@ -70,7 +70,23 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
           "aws:elasticbeanstalk:application:environment",
           "APPLICATION_SECRET",
           "{{resolve:secretsmanager:dev/refapp/secrets:SecretString:appsecret}}"
-        )
+        ),
+        optionSetting("aws:autoscaling:asg", "MinSize", "1"),
+        optionSetting("aws:autoscaling:asg", "MaxSize", "2"),
+        optionSetting("aws:elasticbeanstalk:environment", "EnvironmentType", "LoadBalanced"),
+        optionSetting("aws:elasticbeanstalk:environment", "LoadBalancerType", "application"),
+        optionSetting(
+          "aws:elasticbeanstalk:environment:process:default",
+          "HealthCheckPath",
+          "/health"
+        ),
+        optionSetting(
+          "aws:elasticbeanstalk:environment:process:default",
+          "StickinessEnabled",
+          "true"
+        ),
+        optionSetting("aws:ec2:instances", "InstanceTypes", "t3.small"),
+        optionSetting("aws:elasticbeanstalk:command", "DeploymentPolicy", "AllAtOnce")
       )
     )
     .build()
@@ -79,7 +95,6 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
     .applicationName(appName)
     .environmentName(envName)
     .templateName(configurationTemplate.getRef)
-    .solutionStackName(solutionStack)
     .build()
 
   // Pipeline
@@ -87,8 +102,8 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
   val buildEnv =
     BuildEnvironment
       .builder()
-      .buildImage(LinuxBuildImage.STANDARD_4_0)
-      .computeType(ComputeType.SMALL)
+      .buildImage(LinuxBuildImage.STANDARD_5_0)
+      .computeType(ComputeType.MEDIUM)
       .build()
   val buildSpec =
     if (solutionStack == javaSolutionStackName) "buildspec-java.yml" else "buildspec.yml"
