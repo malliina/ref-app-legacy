@@ -1,5 +1,4 @@
 [![Build Status](https://github.com/malliina/ref-app/workflows/Test/badge.svg)](https://github.com/malliina/ref-app/actions)
-[![Build Status](https://travis-ci.org/malliina/ref-app.png?branch=master)](https://travis-ci.org/malliina/ref-app)
 
 # Reference Application
 
@@ -8,7 +7,7 @@ A reference application.
 ## Components
 
 - [Scala](https://www.scala-lang.org/) / [Play](https://www.playframework.com/) backend.
-- Database connectivity with [Quill](https://getquill.io/) and migrations with [Flyway](https://flywaydb.org/).
+- Database connectivity with [doobie](https://tpolecat.github.io/doobie/) and migrations with [Flyway](https://flywaydb.org/).
 - Server-rendered HTML with [ScalaTags](http://www.lihaoyi.com/scalatags/).
 - Webpack-generated frontend assets in [frontend](frontend) including TypeScript and SASS.
 - [Selenium](http://www.scalatest.org/user_guide/using_selenium) tests in [SeleniumTests.scala](test/tests/SeleniumTests.scala)
@@ -20,7 +19,7 @@ with [testcontainers-scala](https://github.com/testcontainers/testcontainers-sca
 As prerequisites, install:
 
 - [Java 11](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html)
-- [sbt](https://www.scala-sbt.org/) 1.3.x
+- [sbt](https://www.scala-sbt.org/) 1.5.x
 - [Node.js](https://nodejs.org/en/) 10.x
 
 ### Locally

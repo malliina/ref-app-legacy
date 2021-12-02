@@ -9,31 +9,27 @@ val dockerHttpPort = settingKey[Int]("HTTP listen port")
 val defaultPort = 9000
 val Frontend = config("frontend")
 val Beanstalk = config("beanstalk")
-val testContainersScalaVersion = "0.38.1"
+val testContainersScalaVersion = "0.39.12"
 val deploy = taskKey[Unit]("Runs cdk deploy")
 
 inThisBuild(
   Seq(
     organization := "com.malliina",
     version := "1.0.0",
-    scalaVersion := "2.13.3"
+    scalaVersion := "2.13.7"
   )
 )
 
-val p = Project("ref-app", file("."))
+val app = Project("app", file("backend"))
   .enablePlugins(PlayScala, BuildInfoPlugin, DockerPlugin)
   .settings(
-    scalacOptions ++= Seq(
-      "-encoding",
-      "UTF-8"
-    ),
-    libraryDependencies ++= Seq(
+    libraryDependencies ++= Seq("core", "hikari").map { m =>
+      "org.tpolecat" %% s"doobie-$m" % "1.0.0-RC1"
+    } ++ Seq(
       "mysql" % "mysql-connector-java" % "5.1.49",
-      "io.getquill" %% "quill-jdbc" % "3.5.2",
-      "io.getquill" %% "quill-jasync-mysql" % "3.5.2",
       "org.flywaydb" % "flyway-core" % "6.5.5",
       "redis.clients" % "jedis" % "3.3.0",
-      "com.lihaoyi" %% "scalatags" % "0.9.1",
+      "com.lihaoyi" %% "scalatags" % "0.11.0",
       specs2 % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
       "org.seleniumhq.selenium" % "selenium-java" % "3.141.59" % Test,
@@ -42,11 +38,11 @@ val p = Project("ref-app", file("."))
     ),
     dockerVersion := Option(DockerVersion(19, 3, 5, None)),
     dockerBaseImage := "openjdk:11",
-    daemonUser in Docker := "daemon",
+    Docker / daemonUser := "daemon",
     dockerRepository := Option("malliina"),
     dockerExposedPorts := Seq(dockerHttpPort.value),
-    javaOptions in Universal ++= Seq(
-      "-J-Xmx256m",
+    Universal / javaOptions ++= Seq(
+      "-J-Xmx512m",
       s"-Dhttp.port=${dockerHttpPort.value}"
     ),
     gitHash := Try(Process("git rev-parse --short HEAD").lineStream.head).toOption
@@ -63,18 +59,18 @@ val p = Project("ref-app", file("."))
     ),
     buildInfoPackage := "com.malliina.refapp.build",
     pipelineStages := Seq(digest, gzip),
-    baseDirectory in Frontend := baseDirectory.value / "frontend",
-    unmanagedResourceDirectories in Assets += (baseDirectory in Frontend).value / "dist",
+    Frontend / baseDirectory := baseDirectory.value / "frontend",
+    Assets / unmanagedResourceDirectories += (Frontend / baseDirectory).value / "dist",
     PlayKeys.playRunHooks += new NPMRunHook(
-      (baseDirectory in Frontend).value,
+      (Frontend / baseDirectory).value,
       target.value,
       streams.value.log
     ),
-    stage in Frontend := NPMRunHook.stage((baseDirectory in Frontend).value, streams.value.log),
-    stage in Docker := (stage in Docker).dependsOn(stage in Frontend).value,
-    stage in Universal := (stage in Universal).dependsOn(stage in Frontend).value,
-    stage in Beanstalk := (stage in Beanstalk).dependsOn(stage in Universal).value,
-    mappings in Universal ++= contentOf("src/universal")
+    Frontend / stage := NPMRunHook.stage((Frontend / baseDirectory).value, streams.value.log),
+    Docker / stage := (Docker / stage).dependsOn(Frontend / stage).value,
+    Universal / stage := (Universal / stage).dependsOn(Frontend / stage).value,
+    Beanstalk / stage := (Beanstalk / stage).dependsOn(Universal / stage).value,
+    Universal / mappings ++= contentOf("src/universal")
   )
 
 val cdkModules = Seq("s3", "elasticbeanstalk", "codebuild", "codecommit", "codepipeline-actions")
@@ -83,16 +79,16 @@ val infra = project
   .in(file("infra") / "cdk")
   .settings(
     libraryDependencies ++= cdkModules.map { module =>
-      "software.amazon.awscdk" % module % "1.60.0"
+      "software.amazon.awscdk" % module % "1.134.0"
     } ++ Seq(
       "com.typesafe.play" %% "play-json" % "2.9.0",
       "org.scalameta" %% "munit" % "0.7.11" % Test
     ),
     testFrameworks += new TestFramework("munit.Framework"),
     deploy := ProcessIO
-      .runProcessSync("cdk deploy", (baseDirectory in ThisBuild).value, streams.value.log)
+      .runProcessSync("cdk deploy", (ThisBuild / baseDirectory).value, streams.value.log)
   )
 
-val refapp = project.in(file("solution")).aggregate(p, infra)
+val root = project.in(file(".")).aggregate(app, infra)
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
