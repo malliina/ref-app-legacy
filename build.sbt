@@ -59,7 +59,7 @@ val app = Project("app", file("backend"))
     ),
     buildInfoPackage := "com.malliina.refapp.build",
     pipelineStages := Seq(digest, gzip),
-    Frontend / baseDirectory := baseDirectory.value / "frontend",
+    Frontend / baseDirectory := (ThisBuild / baseDirectory).value / "frontend",
     Assets / unmanagedResourceDirectories += (Frontend / baseDirectory).value / "dist",
     PlayKeys.playRunHooks += new NPMRunHook(
       (Frontend / baseDirectory).value,
