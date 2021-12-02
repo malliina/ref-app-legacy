@@ -74,12 +74,12 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
         optionSetting("aws:autoscaling:asg", "MinSize", "1"),
         optionSetting("aws:autoscaling:asg", "MaxSize", "2"),
         optionSetting("aws:elasticbeanstalk:environment", "EnvironmentType", "LoadBalanced"),
-        optionSetting("aws:elasticbeanstalk:environment", "LoadBalancerType", "application"),
-        optionSetting(
-          "aws:elasticbeanstalk:environment:process:default",
-          "HealthCheckPath",
-          "/health"
-        ),
+        optionSetting("aws:elasticbeanstalk:environment", "LoadBalancerType", "classic"),
+//        optionSetting(
+//          "aws:elasticbeanstalk:environment:process:default",
+//          "HealthCheckPath",
+//          "/health"
+//        ),
         optionSetting(
           "aws:elasticbeanstalk:environment:process:default",
           "StickinessEnabled",
@@ -128,7 +128,7 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
         ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess"),
         ManagedPolicy.fromAwsManagedPolicyName("AWSCodeCommitFullAccess"),
         ManagedPolicy.fromAwsManagedPolicyName("AWSCodePipelineFullAccess"),
-        ManagedPolicy.fromAwsManagedPolicyName("AWSElasticBeanstalkFullAccess")
+        ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess-AWSElasticBeanstalk")
       )
     )
     .build()
