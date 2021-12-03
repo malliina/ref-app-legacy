@@ -1,10 +1,16 @@
 package com.malliina.cdk
 
-import software.amazon.awscdk.core.{Construct, Stack, StackProps, App => AWSApp}
-import software.amazon.awscdk.services.elasticbeanstalk.CfnApplication
+import software.amazon.awscdk.core.{Construct, Environment, Stack, StackProps, App => AWSApp}
 
 object AppStack {
-  def apply(scope: Construct, id: String, prefix: String) = new AppStack(scope, id, None, prefix)
+  val stackProps =
+    StackProps
+      .builder()
+      .env(Environment.builder().account("297686094835").region("eu-west-1").build())
+      .build()
+
+  def apply(scope: Construct, id: String, prefix: String) =
+    new AppStack(scope, id, Option(stackProps), prefix)
 }
 
 class AppStack(scope: Construct, id: String, props: Option[StackProps], val prefix: String)

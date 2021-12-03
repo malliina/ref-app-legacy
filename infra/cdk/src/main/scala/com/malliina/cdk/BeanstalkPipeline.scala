@@ -4,15 +4,28 @@ import software.amazon.awscdk.services.codebuild._
 import software.amazon.awscdk.services.codecommit.Repository
 import software.amazon.awscdk.services.codepipeline.actions.{CodeBuildAction, CodeCommitSourceAction}
 import software.amazon.awscdk.services.codepipeline.{Artifact, IAction, Pipeline, StageProps}
+import software.amazon.awscdk.services.ec2.{IVpc, Vpc, VpcLookupOptions}
 import software.amazon.awscdk.services.elasticbeanstalk.{CfnApplication, CfnConfigurationTemplate, CfnEnvironment}
 import software.amazon.awscdk.services.iam.{CfnInstanceProfile, ManagedPolicy, Role}
 
+import scala.jdk.CollectionConverters.ListHasAsScala
+
 object BeanstalkPipeline {
-  def apply(stack: AppStack): BeanstalkPipeline =
-    new BeanstalkPipeline(stack)
+  def apply(stack: AppStack): BeanstalkPipeline = {
+    val lookup =
+      VpcLookupOptions.builder().region("eu-west-1").vpcId("vpc-0edc92c5b7f369949").build()
+    new BeanstalkPipeline(stack, Vpc.fromLookup(stack, "Vpc", lookup))
+  }
+
+  case class Network(
+    vpcId: String,
+    privateSubnetIds: Seq[String],
+    publicSubnetIds: Seq[String],
+    elbSecurityGroupId: String
+  )
 }
 
-class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
+class BeanstalkPipeline(stack: AppStack, vpc: IVpc) extends CDKBuilders {
   val envName = s"${stack.prefix}-refapp"
   val app = CfnApplication.Builder
     .create(stack, "MyCdkBeanstalk")
@@ -26,6 +39,14 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
   val solutionStack = javaSolutionStackName
 
   val branch = "master"
+
+  val architecture: Arch = Arch.Arm64
+
+  def buildImage: IBuildImage = architecture match {
+    case Arch.Arm64  => LinuxBuildImage.AMAZON_LINUX_2_ARM_2
+    case Arch.X86_64 => LinuxBuildImage.AMAZON_LINUX_2_3
+    case Arch.I386   => LinuxBuildImage.STANDARD_5_0
+  }
 
   def makeId(name: String) = s"$envName-$name"
 
@@ -74,7 +95,7 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
         optionSetting("aws:autoscaling:asg", "MinSize", "1"),
         optionSetting("aws:autoscaling:asg", "MaxSize", "2"),
         optionSetting("aws:elasticbeanstalk:environment", "EnvironmentType", "LoadBalanced"),
-        optionSetting("aws:elasticbeanstalk:environment", "LoadBalancerType", "classic"),
+        optionSetting("aws:elasticbeanstalk:environment", "LoadBalancerType", "application"),
 //        optionSetting(
 //          "aws:elasticbeanstalk:environment:process:default",
 //          "HealthCheckPath",
@@ -85,8 +106,12 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
           "StickinessEnabled",
           "true"
         ),
-        optionSetting("aws:ec2:instances", "InstanceTypes", "t3.small"),
-        optionSetting("aws:elasticbeanstalk:command", "DeploymentPolicy", "AllAtOnce")
+        optionSetting("aws:ec2:vpc", "VPCId", vpc.getVpcId),
+        ebSubnets(vpc.getPrivateSubnets.asScala.toList),
+        ebElbSubnets(vpc.getPublicSubnets.asScala.toList),
+        ebInstanceType(t4g.small),
+        ebDeployment("DeploymentPolicy", "AllAtOnce"),
+        supportedArchitectures(Seq(Arch.Arm64))
       )
     )
     .build()
@@ -102,7 +127,7 @@ class BeanstalkPipeline(stack: AppStack) extends CDKBuilders {
   val buildEnv =
     BuildEnvironment
       .builder()
-      .buildImage(LinuxBuildImage.STANDARD_5_0)
+      .buildImage(buildImage)
       .computeType(ComputeType.MEDIUM)
       .build()
   val buildSpec =
