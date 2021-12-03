@@ -48,6 +48,11 @@ class BeanstalkPipeline(stack: AppStack, vpc: IVpc) extends CDKBuilders {
     case Arch.I386   => LinuxBuildImage.STANDARD_5_0
   }
 
+  def buildComputeType = architecture match {
+    case Arch.Arm64 => ComputeType.SMALL
+    case _          => ComputeType.MEDIUM
+  }
+
   def makeId(name: String) = s"$envName-$name"
 
   // Environment
@@ -128,7 +133,7 @@ class BeanstalkPipeline(stack: AppStack, vpc: IVpc) extends CDKBuilders {
     BuildEnvironment
       .builder()
       .buildImage(buildImage)
-      .computeType(ComputeType.MEDIUM)
+      .computeType(buildComputeType)
       .build()
   val buildSpec =
     if (solutionStack == javaSolutionStackName) "buildspec-java.yml" else "buildspec.yml"
