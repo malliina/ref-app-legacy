@@ -71,7 +71,10 @@ class BeanstalkPipeline(stack: AppStack, vpc: IVpc) extends CDKBuilders {
     .create(stack, makeId("AppRole"))
     .assumedBy(principal("ec2.amazonaws.com"))
     .managedPolicies(
-      list(ManagedPolicy.fromAwsManagedPolicyName("AWSElasticBeanstalkWebTier"))
+      list(
+        ManagedPolicy.fromAwsManagedPolicyName("AWSElasticBeanstalkWebTier"),
+        ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess")
+      )
     )
     .build()
   val instanceProfile = CfnInstanceProfile.Builder

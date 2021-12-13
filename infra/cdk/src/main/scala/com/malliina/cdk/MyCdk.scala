@@ -22,8 +22,8 @@ object MyCdk {
   def main(args: Array[String]): Unit = {
     val app = new AWSApp()
 
+    val dev = AppStack(app, "dev-refapp", "dev")
     val qa = AppStack(app, "qa-refapp", "qa")
-
     val prod = AppStack(app, "prod-refapp", "prod")
 
     val assembly = app.synth()
