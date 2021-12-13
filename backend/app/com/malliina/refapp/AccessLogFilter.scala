@@ -13,9 +13,9 @@ class AccessLogFilter()(implicit ec: ExecutionContext) extends EssentialFilter {
   private val log = Logger(getClass)
 
   override def apply(next: EssentialAction): EssentialAction = { rh =>
-    log.trace(s"$rh")
+    log.info(s"$rh")
     next(rh).map { r =>
-      log.trace(s"${r.header.status} $rh")
+      log.info(s"${r.header.status} $rh")
       r
     }
   }

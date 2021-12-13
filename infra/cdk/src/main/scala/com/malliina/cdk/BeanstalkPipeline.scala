@@ -91,16 +91,15 @@ class BeanstalkPipeline(stack: AppStack, vpc: IVpc) extends CDKBuilders {
           instanceProfile.getRef
         ),
         optionSetting("aws:elasticbeanstalk:environment", "ServiceRole", serviceRole.getRoleName),
-        optionSetting("aws:elasticbeanstalk:application:environment", "PORT", "9000"),
-        optionSetting(
-          "aws:elasticbeanstalk:application:environment",
+        ebEnvVar("PORT", "9000"),
+        ebEnvVar(
           "APPLICATION_SECRET",
           "{{resolve:secretsmanager:dev/refapp/secrets:SecretString:appsecret}}"
         ),
-        optionSetting("aws:autoscaling:asg", "MinSize", "1"),
-        optionSetting("aws:autoscaling:asg", "MaxSize", "2"),
-        optionSetting("aws:elasticbeanstalk:environment", "EnvironmentType", "LoadBalanced"),
-        optionSetting("aws:elasticbeanstalk:environment", "LoadBalancerType", "application"),
+        asgMinSize(1),
+        asgMaxSize(2),
+        ebEnvironment("EnvironmentType", "LoadBalanced"),
+        ebEnvironment("LoadBalancerType", "application"),
 //        optionSetting(
 //          "aws:elasticbeanstalk:environment:process:default",
 //          "HealthCheckPath",
@@ -111,12 +110,13 @@ class BeanstalkPipeline(stack: AppStack, vpc: IVpc) extends CDKBuilders {
           "StickinessEnabled",
           "true"
         ),
-        optionSetting("aws:ec2:vpc", "VPCId", vpc.getVpcId),
+        ebVpc("VPCId", vpc.getVpcId),
         ebSubnets(vpc.getPrivateSubnets.asScala.toList),
         ebElbSubnets(vpc.getPublicSubnets.asScala.toList),
         ebInstanceType(t4g.small),
         ebDeployment("DeploymentPolicy", "AllAtOnce"),
-        supportedArchitectures(Seq(Arch.Arm64))
+        supportedArchitectures(Seq(Arch.Arm64)),
+        streamLogs
       )
     )
     .build()

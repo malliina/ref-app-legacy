@@ -56,6 +56,9 @@ trait OptionSettings {
     optionSetting("aws:ec2:instances", optionName, value)
   def ebEnvVar(key: String, value: String) =
     optionSetting("aws:elasticbeanstalk:application:environment", key, value)
+  def streamLogs = ebLogs("StreamLogs", "true")
+  def ebLogs(optionName: String, value: String) =
+    optionSetting("aws:elasticbeanstalk:cloudwatch:logs", optionName, value)
   def optionSetting(namespace: String, optionName: String, value: String) =
     ConfigurationOptionSettingProperty
       .builder()
